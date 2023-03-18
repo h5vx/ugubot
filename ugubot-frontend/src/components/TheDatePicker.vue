@@ -71,6 +71,11 @@ export default {
             selectedDay: null,
         }
     },
+    watch: {
+        dates() {
+            this.selectLastAvailableDate()
+        },
+    },
     beforeMount() {
         this.selectLastAvailableDate()
     },
@@ -173,6 +178,7 @@ export default {
             return Object.keys(this.dates)
         },
         allMonths() {
+            console.log(this.selectedYear)
             return Object.keys(this.dates[this.selectedYear])
         },
         allDays() {

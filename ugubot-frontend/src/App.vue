@@ -1,12 +1,10 @@
 <template>
-  <TheChatListSidebar :chats="chats" :active-chat-id="activeChatId" @chatSelected="onChatSelected" />
+  <TheChatListSidebar ref="sidebar" :chats="chats" :active-chat-id="activeChatId" @chatSelected="onChatSelected"
+    @menuClick="onMenuClick" />
 
   <main id="main" style="margin-left: 286px; transition: none;">
     <TheHeader :text="activeChat.jid" />
-    <TheDatePicker 
-      :dates="chatDates[activeChatId]" 
-      :current-date="getCurrentDate()" 
-      @date-selected="onDateSelected" />
+    <TheDatePicker :dates="chatDates[activeChatId]" :current-date="getCurrentDate()" @date-selected="onDateSelected" />
   </main>
 </template>
 
@@ -39,7 +37,9 @@ export default {
             "Feb": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25"],
             "Mar": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18"],
           },
-        }
+        },
+        1: { "2021": { "Jan": ["01"] } },
+        2: { "2021": { "Jan": ["01"] } },
       },
     }
   },
@@ -49,6 +49,9 @@ export default {
     },
     onDateSelected(date) {
       console.log(date.format("YYYY/MMM/DD"))
+    },
+    onMenuClick() {
+      this.$refs.sidebar.style.display = "block"
     },
     getCurrentDate() {
       return moment()
