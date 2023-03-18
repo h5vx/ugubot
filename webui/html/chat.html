@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ugubot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cantarell&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="chat.css">
+    <script src="chat.js"></script>
+</head>
+
+<aside id="sidebar" class="w3-sidebar w3-collapse bg-dark fg-white" style="width: 286px;">
+    <h2 class="w3-center w3-wide w3-large bg-dark fg-cherry">
+        CHATLIST
+    </h2>
+
+    <button id="sidebar-close-button" class="w3-button w3-display-topright w3-hide-large">
+        <i class="fa fa-close"></i>
+    </button>
+
+    <div class="chatlist">
+        <h6 class="w3-hover-opacity selected">
+            <i class="fa fa-comments chaticon w3-text-red"></i> boardplay@conference.0-chan.ru
+        </h6>
+        <h6 class="w3-opacity w3-hover-opacity-off">
+            <i class="fa fa-user chaticon w3-text-grey"></i>
+            ugubok
+        </h6>
+        <h6 class="w3-opacity w3-hover-opacity-off">
+            <i class="fa fa-user chaticon w3-text-grey"></i>
+            lorem
+        </h6>
+    </div>
+
+    <div class="resizer-handle" min-width="144" max-width="400">
+
+    </div>
+</aside>
+
+<main id="main" style="margin-left: 286px; transition: none;">
+    <div class="w3-container main-header bg-primary-darkest fg-white">
+        <button id="menu-button" class="w3-button w3-left w3-large w3-hide-large fg-primary">
+            <i class="fa fa-bars"></i>
+        </button>
+        <h4 class="w3-large">boardplay@conference.0-chan.ru</h4>
+    </div>
+
+    <div class="main-bar w3-bar fg-white bg-dark-less">
+        <!-- Year select dropdown -->
+        <div class="w3-dropdown-click">
+            <button id="year-picker"
+                class="w3-button bg-dark-less bg-hover-primary-darkest fg-white fg-hover-white">2023&nbsp;&nbsp;<i
+                    class="fa fa-angle-down w3-tiny"></i></button>
+            <div id="year-dropdown" class="w3-dropdown-content w3-bar-block w3-card-4 bg-primary-darkest fg-white">
+                <button class="w3-bar-item w3-button bg-hover-primary-darker fg-hover-white">2021</button>
+                <button class="w3-bar-item w3-button bg-hover-primary-darker fg-hover-white">2022</button>
+                <button class="w3-bar-item w3-button bg-primary bg-hover-primary-darker fg-hover-white">2023</button>
+            </div>
+        </div>
+        <!-- Month select dropdown -->
+        <div class="w3-dropdown-click">
+            <button id="month-picker"
+                class="w3-button bg-dark-less bg-hover-primary-darkest fg-white fg-hover-white">Feb&nbsp;&nbsp;<i
+                    class="fa fa-angle-down w3-tiny"></i></button>
+            <div id="month-dropdown" class="w3-dropdown-content w3-bar-block w3-card-4 bg-primary-darkest fg-white">
+                <button class="w3-bar-item w3-button bg-hover-primary-darker fg-hover-white">Jan</button>
+                <button class="w3-bar-item w3-button bg-primary bg-hover-primary-darker fg-hover-white">Feb</button>
+                <button class="w3-bar-item w3-button bg-hover-primary-darker fg-hover-white">Mar</button>
+            </div>
+        </div>
+
+        <button id="dp-scroll-left" class="w3-bar-item bg-dark fg-hover-white w3-button round-left"><i
+                class="fa fa-caret-left"></i></button>
+        <div id="date-picker" style="max-width: 200px">
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">1</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">2</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">3</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">4</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">5</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">6</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">7</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">8</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">9</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">10</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">11</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">12</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">13</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">14</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">15</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">16</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">17</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">18</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">19</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">20</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-cherry fg-hover-white w3-button active-button bg-dark-cherry">21</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">22</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">23</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">24</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">25</button>
+            <button class="w3-bar-item bg-dark bg-hover-dark-less fg-hover-white w3-button">26</button>
+        </div>
+        <button id="dp-scroll-right" class="w3-bar-item bg-dark fg-hover-white w3-button round-right"><i
+                class="fa fa-caret-right"></i></button>
+    </div>
+
+
+    <div id="message-box" class="">
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-envelope w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:00:45</span>
+            <b class="message-nick w3-text-green">mya: </b>
+            <span class="message-text">Hello</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-envelope w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:02:01</span>
+            <b class="message-nick w3-text-pink">alice: </b>
+            <span class="message-text">Hi</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-arrow-right-to-bracket w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:10:10</span>
+            <span class="message-text w3-text-grey"><b class="w3-text-brown">Greek</b> joined</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-envelope w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:30:01</span>
+            <b class="message-nick w3-text-brown">Greek: </b>
+            <span class="message-text">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quae commodi, animi
+                suscipit iure libero minus saepe illum dolores! Ducimus, eos accusantium facilis assumenda eum natus
+                numquam et laborum dignissimos magnam?</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-envelope w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:30:01</span>
+            <b class="message-nick w3-text-brown">Greek: </b>
+            <span class="message-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Temporibus doloribus
+                expedita saepe numquam distinctio maiores architecto, cum ipsam ratione officia modi quia placeat
+                commodi ex. Aliquid officia vitae optio veritatis. Lorem ipsum, dolor sit amet consectetur adipisicing
+                elit. Sapiente possimus cum unde accusantium qui, eligendi tempore exercitationem. Possimus, ex! At
+                numquam cupiditate in. Blanditiis tempore commodi, dolorem accusantium mollitia labore. Lorem ipsum,
+                dolor sit amet consectetur adipisicing elit. Quos, culpa eveniet beatae atque, illo officiis adipisci
+                sapiente omnis at quas ratione earum ut quam eos dolorem reprehenderit porro architecto enim. Lorem
+                ipsum dolor sit amet consectetur adipisicing elit. Tempore beatae, doloremque, vero quas eveniet
+                reiciendis earum provident dolores voluptas at quasi fuga perferendis! Expedita quisquam est illum
+                quidem magni fugit.</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-envelope w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:30:01</span>
+            <b class="message-nick w3-text-brown">Greek: </b>
+            <span class="message-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Temporibus doloribus
+                expedita saepe numquam distinctio maiores architecto, cum ipsam ratione officia modi quia placeat
+                commodi ex. Aliquid officia vitae optio veritatis. Lorem ipsum, dolor sit amet consectetur adipisicing
+                elit. Sapiente possimus cum unde accusantium qui, eligendi tempore exercitationem. Possimus, ex! At
+                numquam cupiditate in. Blanditiis tempore commodi, dolorem accusantium mollitia labore. Lorem ipsum,
+                dolor sit amet consectetur adipisicing elit. Quos, culpa eveniet beatae atque, illo officiis adipisci
+                sapiente omnis at quas ratione earum ut quam eos dolorem reprehenderit porro architecto enim. Lorem
+                ipsum dolor sit amet consectetur adipisicing elit. Tempore beatae, doloremque, vero quas eveniet
+                reiciendis earum provident dolores voluptas at quasi fuga perferendis! Expedita quisquam est illum
+                quidem magni fugit.</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-envelope w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:30:01</span>
+            <b class="message-nick w3-text-brown">Greek: </b>
+            <span class="message-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Temporibus doloribus
+                expedita saepe numquam distinctio maiores architecto, cum ipsam ratione officia modi quia placeat
+                commodi ex. Aliquid officia vitae optio veritatis. Lorem ipsum, dolor sit amet consectetur adipisicing
+                elit. Sapiente possimus cum unde accusantium qui, eligendi tempore exercitationem. Possimus, ex! At
+                numquam cupiditate in. Blanditiis tempore commodi, dolorem accusantium mollitia labore. Lorem ipsum,
+                dolor sit amet consectetur adipisicing elit. Quos, culpa eveniet beatae atque, illo officiis adipisci
+                sapiente omnis at quas ratione earum ut quam eos dolorem reprehenderit porro architecto enim. Lorem
+                ipsum dolor sit amet consectetur adipisicing elit. Tempore beatae, doloremque, vero quas eveniet
+                reiciendis earum provident dolores voluptas at quasi fuga perferendis! Expedita quisquam est illum
+                quidem magni fugit.</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-envelope w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:30:01</span>
+            <b class="message-nick w3-text-brown">Greek: </b>
+            <span class="message-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Temporibus doloribus
+                expedita saepe numquam distinctio maiores architecto, cum ipsam ratione officia modi quia placeat
+                commodi ex. Aliquid officia vitae optio veritatis. Lorem ipsum, dolor sit amet consectetur adipisicing
+                elit. Sapiente possimus cum unde accusantium qui, eligendi tempore exercitationem. Possimus, ex! At
+                numquam cupiditate in. Blanditiis tempore commodi, dolorem accusantium mollitia labore. Lorem ipsum,
+                dolor sit amet consectetur adipisicing elit. Quos, culpa eveniet beatae atque, illo officiis adipisci
+                sapiente omnis at quas ratione earum ut quam eos dolorem reprehenderit porro architecto enim. Lorem
+                ipsum dolor sit amet consectetur adipisicing elit. Tempore beatae, doloremque, vero quas eveniet
+                reiciendis earum provident dolores voluptas at quasi fuga perferendis! Expedita quisquam est illum
+                quidem magni fugit.</span>
+        </div>
+        <div class="message w3-padding-small w3-hover-shadow">
+            <i class="fa fa-arrow-right-from-bracket w3-text-grey"></i>
+            <span class="message-time w3-tiny w3-text-grey">12:10:10</span>
+            <span class="message-text w3-text-grey"><b class="w3-text-brown">Greek</b> leaving</span>
+        </div>
+    </div>
+
+    <input type="text" class="w3-input w3-bottom bg-dark fg-cherry w3-border-0" name="message"
+        placeholder="Write a message" id="message-input">
+</main>
+
+<body>
+</body>
+
+</html>

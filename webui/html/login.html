@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>KOOKAREKOO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            background: rgb(238, 174, 202);
+            background: linear-gradient(180deg, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+        }
+
+        .input-group {
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px violet;
+        }
+
+        .form-control:focus {
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px transparent;
+        }
+    </style>
+    <script>
+        document.addEventListener("submit", (e) => {
+            const form = e.target;
+
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form),
+            })
+            .then((res) => {
+                if (res.status == 200) {
+                    document.location = "/";
+                }
+                if (res.status == 401) {
+                    input = document.getElementsByName("token")[0];
+                    input.value = "";
+                    input.focus();
+                }
+            })
+
+            e.preventDefault();
+        })
+    </script>
+</head>
+
+<body>
+    <div class="container" style="max-width: 700px;">
+        <form class="input-group input-group-lg" action="/login" method="post">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-lg" style="z-index: 10;">🔑</span>
+            </div>
+            <input type="password" name="token" class="form-control" aria-describedby="inputGroup-sizing-sm"
+                autofocus>
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">!!!</button>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

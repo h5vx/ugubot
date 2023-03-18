@@ -1,0 +1,44 @@
+# This to be placed to .secrets.toml
+# [xmpp]
+# jid = "user@example.com"
+# password = "password"
+# ssl_verify = false
+# 
+# [openai]
+# api_key = "your-key"
+# 
+# [webui]
+# password_sha512 = ""
+# 
+# # Auth cookie will be signed with this key
+# signing_key = ""
+# 
+# # Period after auth cookie will expire
+# # Format: <number>s/m/h/d/w (seconds, minutes, hours, days, weeks)
+# # Set to empty string to disable expiration
+# auth_expiration = "1w"
+# 
+# [xmpp.rooms.test]
+# join = true
+# jid = "test@conference.example.com"
+# nick = "User"
+
+[database]
+path = "../history.db"
+
+[logging]
+version = 1
+
+[logging.formatters.default]
+format = "%(asctime)s %(levelname)-8s %(name)-15s %(message)s"
+
+[logging.handlers.default]
+class = "logging.StreamHandler"
+formatter = "default"
+level = "INFO"
+stream = "ext://sys.stdout"
+
+[logging.loggers.'']
+handlers = ["default"]
+level = "INFO"
+propagate = false

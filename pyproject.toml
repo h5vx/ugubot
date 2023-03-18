@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "ugubot"
+version = "0.1.0"
+description = ""
+authors = ["h5vx <h5v@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aioxmpp = "^0.13.3"
+dynaconf = "^3.1.12"
+openai = "^0.27.1"
+pony = "^0.7.16"
+pytz = "^2022.7.1"
+uvicorn = {extras = ["standard"], version = "^0.21.0"}
+python-multipart = "^0.0.6"
+starlette = "^0.26.0.post1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
