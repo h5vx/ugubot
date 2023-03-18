@@ -2,11 +2,11 @@
     <div class="main-bar w3-bar fg-white bg-dark-less">
         <!-- Year select dropdown -->
         <div class="w3-dropdown-click">
-            <button id="year-picker" class="w3-button bg-dark-less bg-hover-primary-darkest fg-white fg-hover-white">
+            <button ref="yearPicker" class="w3-button bg-dark-less bg-hover-primary-darkest fg-white fg-hover-white">
                 {{ selectedYear }}
                 <FontAwesomeIcon icon="fa-angle-down" class="w3-tiny dropdown-icon"></FontAwesomeIcon>
             </button>
-            <div id="year-dropdown" class="w3-dropdown-content w3-bar-block w3-card-4 bg-primary-darkest fg-white">
+            <div ref="yearDropdown" class="w3-dropdown-content w3-bar-block w3-card-4 bg-primary-darkest fg-white">
                 <button v-for="year in allYears" class="w3-bar-item w3-button bg-hover-primary-darker fg-hover-white"
                     :class="{ 'bg-primary': year === selectedYear }" @click="onSelectYear(year)">
                     {{ year }}
@@ -16,11 +16,11 @@
 
         <!-- Month select dropdown -->
         <div class="w3-dropdown-click">
-            <button id="month-picker" class="w3-button bg-dark-less bg-hover-primary-darkest fg-white fg-hover-white">
+            <button ref="monthPicker" class="w3-button bg-dark-less bg-hover-primary-darkest fg-white fg-hover-white">
                 {{ selectedMonth }}
                 <FontAwesomeIcon icon="fa-angle-down" class="w3-tiny dropdown-icon"></FontAwesomeIcon>
             </button>
-            <div id="month-dropdown" class="w3-dropdown-content w3-bar-block w3-card-4 bg-primary-darkest fg-white">
+            <div ref="monthDropdown" class="w3-dropdown-content w3-bar-block w3-card-4 bg-primary-darkest fg-white">
                 <button v-for="month in allMonths" class="w3-bar-item w3-button bg-hover-primary-darker fg-hover-white"
                     :class="{ 'bg-primary': month === selectedMonth }" @click="onSelectMonth(month)">
                     {{ month }}
@@ -28,10 +28,10 @@
             </div>
         </div>
 
-        <button id="dp-scroll-left" class="w3-bar-item bg-dark fg-hover-white w3-button round-left">
+        <button id="scroll-left" ref="scrollLeft" class="w3-bar-item bg-dark fg-hover-white w3-button round-left">
             <FontAwesomeIcon icon="fa-caret-left"></FontAwesomeIcon>
         </button>
-        <div id="date-picker" style="max-width: 200px">
+        <div id="day-picker" ref="dayPicker" style="max-width: 200px">
             <button v-for="day in allDays" class="w3-bar-item bg-dark fg-hover-white w3-button" :class="{
                 'bg-hover-dark-less': day !== selectedDay,
                 'bg-hover-dark-cherry': day === selectedDay,
@@ -41,7 +41,7 @@
                 {{ day }}
             </button>
         </div>
-        <button id="dp-scroll-right" class="w3-bar-item bg-dark fg-hover-white w3-button round-right">
+        <button id="scroll-right" ref="scrollRight" class="w3-bar-item bg-dark fg-hover-white w3-button round-right">
             <FontAwesomeIcon icon="fa-caret-right"></FontAwesomeIcon>
         </button>
     </div>
@@ -73,9 +73,6 @@ export default {
     },
     beforeMount() {
         this.selectLastAvailableDate()
-    },
-    mounted() {
-
     },
     components: { FontAwesomeIcon },
     methods: {
@@ -122,7 +119,54 @@ export default {
         },
         getFirstAvailableDay() {
             return this.dates[this.selectedYear][this.selectedMonth][0]
-        }
+        },
+        UIUpdateScrollButtons() {
+            const dayPicker = this.$refs.dayPicker
+
+            if (!dayPicker) {
+                return
+            }
+
+            const dayPickerScrollLeft = this.$refs.scrollLeft
+            const dayPickerScrollRight = this.$refs.scrollRight
+            const scrollPercentage = 100 * dayPicker.scrollLeft / (dayPicker.scrollWidth - dayPicker.clientWidth);
+
+            if (scrollPercentage > 99) {
+                dayPickerScrollRight.classList.add("w3-opacity-max");
+            }
+
+            if (scrollPercentage == 0) {
+                dayPickerScrollLeft.classList.add("w3-opacity-max");
+            }
+
+            if (scrollPercentage > 0) {
+                dayPickerScrollLeft.classList.remove("w3-opacity-max");
+            }
+
+            if (scrollPercentage <= 99) {
+                dayPickerScrollRight.classList.remove("w3-opacity-max");
+            }
+
+            if (dayPicker.scrollWidth <= dayPicker.clientWidth) {
+                dayPickerScrollRight.classList.add("w3-opacity-max")
+            }
+        },
+        UIUpdateDayPickerWidth() {
+            const dayPicker = this.$refs.dayPicker
+
+            if (!dayPicker) {
+                return
+            }
+
+            const dayPickerScrollLeft = this.$refs.scrollLeft
+            const dayPickerScrollRight = this.$refs.scrollRight
+            const dpScrollLeftBtnRect = dayPickerScrollLeft.getBoundingClientRect();
+            const dpScrollRightBtnRect = dayPickerScrollRight.getBoundingClientRect();
+            const docWidth = document.body.getBoundingClientRect().width;
+            const dpNewWidth = docWidth - dpScrollLeftBtnRect.x - dpScrollLeftBtnRect.width - dpScrollRightBtnRect.width - 10;
+
+            dayPicker.style.maxWidth = dpNewWidth + "px";
+        },
     },
     computed: {
         allYears() {
@@ -134,6 +178,74 @@ export default {
         allDays() {
             return this.dates[this.selectedYear][this.selectedMonth]
         },
+    },
+    mounted() {
+        const dayPicker = this.$refs.dayPicker
+        const dayPickerScrollLeft = this.$refs.scrollLeft
+        const dayPickerScrollRight = this.$refs.scrollRight
+
+        const scroller = (direction) => {
+            return (e) => {
+                var scrollSize = (dayPicker.offsetWidth / 2);
+
+                if (dayPicker.offsetWidth < 200) {
+                    scrollSize = dayPicker.offsetWidth;
+                }
+
+                dayPicker.scroll({
+                    left: dayPicker.scrollLeft + scrollSize * direction,
+                    behavior: "smooth",
+                });
+            }
+        }
+
+        dayPicker.addEventListener("scroll", this.UIUpdateScrollButtons);
+
+        dayPickerScrollLeft.addEventListener("click", scroller(-1));
+        dayPickerScrollRight.addEventListener("click", scroller(1));
+
+        // Date picker auto resize
+        const main = document.getElementById("main");
+
+        // updateDatePickerWidth();
+        new ResizeObserver(this.UIUpdateDayPickerWidth).observe(main)
+
+        // Year & month dropdowns
+        const yearPickButton = this.$refs.yearPicker
+        const monthPickButton = this.$refs.monthPicker
+        const yearDropDown = this.$refs.yearDropdown
+        const monthDropDown = this.$refs.monthDropdown
+
+        const showYearDropDown = () => { yearDropDown.classList.add("w3-show"); };
+        const hideYearDropDown = () => { yearDropDown.classList.remove("w3-show"); };
+        const showMonthDropDown = () => { monthDropDown.classList.add("w3-show"); };
+        const hideMonthDropDown = () => { monthDropDown.classList.remove("w3-show"); };
+
+        yearDropDown.addEventListener("mouseleave", hideYearDropDown);
+        monthDropDown.addEventListener("mouseleave", hideMonthDropDown);
+
+        yearPickButton.addEventListener("mouseleave", () => {
+            if (!yearDropDown.matches(":hover")) {
+                hideYearDropDown();
+            }
+        });
+
+        monthPickButton.addEventListener("mouseleave", () => {
+            if (!monthDropDown.matches(":hover")) {
+                hideMonthDropDown();
+            }
+        });
+
+        yearPickButton.addEventListener("click", showYearDropDown);
+        monthPickButton.addEventListener("click", showMonthDropDown);
+
+        this.UIUpdateScrollButtons();
+        this.UIUpdateDayPickerWidth();
+        new ResizeObserver(this.UIUpdateScrollButtons).observe(main);
+    },
+    updated() {
+        this.UIUpdateScrollButtons()
+        this.UIUpdateDayPickerWidth()
     }
 }
 </script>
@@ -145,5 +257,40 @@ export default {
 
 #month-picker {
     min-width: 80px;
+}
+
+#day-picker {
+    overflow: auto;
+    overflow-x: hidden;
+    white-space: nowrap;
+    font-size: 0;
+
+    display: block;
+    float: left;
+}
+
+#day-picker>button {
+    display: inline-block;
+    float: none;
+}
+
+#day-picker .active-button {
+    position: sticky;
+    left: 0;
+    right: 0;
+}
+
+#scroll-left,
+#scroll-right,
+#day-picker>button {
+    font-size: 13px;
+    height: 34px;
+}
+
+#day-picker,
+#scroll-left,
+#scroll-right {
+    margin-top: 2px;
+    background: linear-gradient(180deg, rgba(35, 42, 62, 1) 0%, rgba(7, 8, 12, 1) 100%);
 }
 </style>
