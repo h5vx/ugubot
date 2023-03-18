@@ -1,5 +1,5 @@
 <template>
-    <div class="main-bar w3-bar fg-white bg-dark-less">
+    <div class="main-bar w3-bar fg-white bg-dark-less w3-card-2">
         <!-- Year select dropdown -->
         <div class="w3-dropdown-click">
             <button ref="yearPicker" class="w3-button bg-dark-less bg-hover-primary-darkest fg-white fg-hover-white">
@@ -257,6 +257,14 @@ export default {
 </script>
 
 <style scoped>
+.main-bar {
+    background-color: #0c0e15;
+    position: sticky;
+    top: 0;
+    overflow: visible;
+    z-index: 7;
+}
+
 .dropdown-icon {
     padding-left: 2pt;
 }

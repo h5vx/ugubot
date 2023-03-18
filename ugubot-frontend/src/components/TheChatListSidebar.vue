@@ -1,5 +1,5 @@
 <template>
-    <aside id="sidebar" class="w3-sidebar w3-collapse bg-dark fg-white" style="width: 286px;">
+    <aside id="sidebar" class="w3-sidebar w3-collapse bg-dark fg-white">
         <h2 class="w3-center w3-wide w3-large bg-dark fg-cherry">
             CHATLIST
         </h2>
@@ -54,7 +54,48 @@ export default {
 
 <style scoped>
 aside {
+    z-index: 10;
     width: 286px;
+}
+
+#sidebar-close-button {
+    padding: 12px 18px 12px 18px;
+}
+
+.chatlist h6 {
+    padding: 4px 0px 4px 7px;
+    margin: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 15px;
+    font-family: 'Cantarell', sans-serif !important;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+}
+
+.chatlist .selected {
+    background-color: #4d052d;
+    border-top: 1px solid #f5118f;
+    border-bottom: 1px solid #f5118f;
+    color: white;
+    font-family: 'Cantarell', sans-serif !important;
+}
+
+.chaticon {
+    min-width: 24px;
+    padding-right: 5px;
+    text-align: center;
+}
+
+.resizer-handle {
+    position: absolute;
+    height: 100%;
+    width: 2px;
+    top: 0;
+    right: 0;
+    background-color: #374161;
+    float: right;
+    cursor: e-resize;
 }
 
 #sidebar-close-button {
