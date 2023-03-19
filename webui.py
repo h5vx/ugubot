@@ -6,12 +6,19 @@ from starlette.authentication import AuthCredentials, AuthenticationBackend, Sim
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.requests import Request
-from starlette.responses import FileResponse, JSONResponse, RedirectResponse
-from starlette.routing import Mount, Route
+from starlette.responses import (
+    FileResponse,
+    JSONResponse,
+    RedirectResponse,
+)
+from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
+from starlette.websockets import WebSocket
 
 from config import settings
+from db import Chat, Message, db_session
 from util.signer import Signer
+from ws_handler import command_router
 
 cookie_signer = Signer(settings.webui.signing_key, settings.webui.auth_expiration)
 
@@ -70,12 +77,33 @@ async def login(request: Request):
     return await login_attempt(request)
 
 
+async def ws(websocket: WebSocket):
+    token = websocket.query_params.get("token", "")
+
+    if not token or not cookie_signer.check_token(token):
+        await websocket.close()
+
+    await websocket.accept()
+
+    async for message in websocket.iter_json():
+        result = command_router.execute(message)
+        await websocket.send_json(result)
+
+    await websocket.close()
+
+
+async def ws_test(request):
+    return FileResponse("webui/html/ws_test.html")
+
+
 app = Starlette(
-    debug=True,
+    debug=settings.webui.debug,
     routes=[
         Route("/", index, methods=["GET"]),
         Route("/login", login, methods=["GET", "POST"]),
         Mount("/static", StaticFiles(directory="webui/static")),
+        WebSocketRoute("/ws", endpoint=ws),
+        Route("/ws_test", ws_test),
     ],
     middleware=[
         Middleware(

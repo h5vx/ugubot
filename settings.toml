@@ -24,7 +24,7 @@
 # nick = "User"
 
 [database]
-path = "../history.db"
+path = "./history.db"
 
 [logging]
 version = 1

@@ -1,4 +1,5 @@
 import logging
+import os
 import typing as t
 from datetime import datetime
 from enum import Enum
@@ -39,8 +40,9 @@ class Message(db.Entity):
 
 
 def db_init():
-    logger.info(f"Opening database {settings.database.path}")
-    db.bind("sqlite", settings.database.path, create_db=True)
+    db_path = os.path.abspath(settings.database.path)
+    logger.info(f"Opening database {db_path}")
+    db.bind("sqlite", db_path, create_db=True)
 
     logger.info(f"Start database migration")
     db.generate_mapping(create_tables=True)

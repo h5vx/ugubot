@@ -3,9 +3,11 @@ import logging
 
 import aioxmpp
 import aioxmpp.muc
+import uvicorn
 
 import db
 from config import settings
+from webui import app
 from xmpp import Handler, XMPPBot
 
 logger = logging.getLogger(__name__)
@@ -61,16 +63,18 @@ async def bot_task():
         bot.stop()
 
 
+@app.on_event("startup")
 def main():
     db.db_init()
 
-    loop = asyncio.new_event_loop()
-
-    try:
-        loop.run_until_complete(bot_task())
-    finally:
-        loop.close()
+    loop = asyncio.get_event_loop()
+    loop.create_task(bot_task())
 
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(
+        "webui:app",
+        host=settings.webui.listen,
+        port=settings.webui.port,
+        loop="asyncio",
+    )
