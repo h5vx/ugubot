@@ -6,6 +6,7 @@
     <TheHeader :text="activeChat.jid" />
     <TheDatePicker :dates="chatDates[activeChatId]" :current-date="getCurrentDate()" @date-selected="onDateSelected" />
     <TheChatBox :messages="chatMessages" />
+    <TheInputPrompt />
   </main>
 </template>
 
@@ -14,15 +15,16 @@ import TheChatListSidebar from './components/TheChatListSidebar.vue'
 import TheHeader from './components/TheHeader.vue'
 import TheDatePicker from './components/TheDatePicker.vue'
 import TheChatBox from './components/TheChatBox.vue'
+import TheInputPrompt from './components/TheInputPrompt.vue'
 import moment from 'moment'
 
 export default {
-  components: { TheChatListSidebar, TheHeader, TheDatePicker, TheChatBox },
+  components: { TheChatListSidebar, TheHeader, TheDatePicker, TheChatBox, TheInputPrompt },
   data() {
     return {
       activeChatId: 0,
       chats: [
-        { "id": 0, "type": "muc", "jid": "boardplay@conference.0-chan.ru", "name": "boardplay@conference.jabber.ru" },
+        { "id": 0, "type": "muc", "jid": "some chat", "name": "some chat" },
         { "id": 1, "type": "user", "jid": "ugubok@ugubok.ru", "name": "ugubok" },
         { "id": 2, "type": "user", "jid": "lorem@ugubok.ru", "name": "lorem" },
       ],

@@ -43,6 +43,11 @@
     color: #4b5987 !important;
 }
 
+.fg-primary-light,
+.fg-primary-light:hover {
+    color: #5e70a8 !important;
+}
+
 .round-left {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
@@ -55,6 +60,7 @@
 
 body {
     font-family: 'Cantarell', sans-serif !important;
+    background-color: #171c2e;
 }
 
 aside {

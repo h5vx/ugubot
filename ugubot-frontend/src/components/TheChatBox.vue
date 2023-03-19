@@ -48,7 +48,7 @@ export default {
 
 <style scoped>
 #message-box {
-    margin-bottom: 43px;
+    margin-bottom: 42px;
     font-family: Arial, Helvetica, sans-serif;
 }
 
