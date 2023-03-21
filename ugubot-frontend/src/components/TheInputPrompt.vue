@@ -12,8 +12,8 @@
 
 <script>
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faAnglesRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faAnglesRight } from '@fortawesome/free-solid-svg-icons'
 
 library.add(faAnglesRight)
 
@@ -30,7 +30,7 @@ export default {
     mounted() {
         const main = document.getElementById("main")
         const resizeInput = () => {
-            if (!this.$refs.input) return
+            if (!this.$refs.container) return
             this.$refs.input.style.width = (main.clientWidth - 100) + "px"
             this.$refs.container.style.width = main.clientWidth + "px"
         }

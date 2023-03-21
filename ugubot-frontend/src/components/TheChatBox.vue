@@ -8,18 +8,8 @@
                 <span class="message-time w3-tiny w3-text-grey">
                     {{ formatTime(message.utctime) }}
                 </span>
-                <b v-if="message.msg_type === 'USER' || message.msg_type === 'MUC_PRIVMSG'"
-                    class="message-nick w3-text-green">
-                    {{ message.nick }}:
-                </b>
-                <b v-else-if="message.msg_type === 'TOPIC'" class="message-nick w3-text-green w3-opacity">
-                    {{ message.nick }}&ZeroWidthSpace;
-                </b>
-                <b v-else-if="message.msg_type === 'PART_JOIN'" class="message-nick w3-text-green w3-opacity">
-                    {{ message.nick }}
-                </b>
-                <b v-else-if="message.msg_type === 'PART_LEAVE'" class="message-nick w3-text-green w3-grayscale">
-                    {{ message.nick }}
+                <b :class="getClassesForNick(message)" @click="this.$emit('nickClick', { e: $event, nick: message.nick })">
+                    {{ message.nick }}{{ message.msg_type === 'USER' ? ':' : '' }}
                 </b>
             </div>
 
@@ -43,13 +33,12 @@
 
 <script>
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT } from '@fortawesome/free-solid-svg-icons'
 import { faCommentDots } from '@fortawesome/free-regular-svg-icons'
+import { faArrowRightFromBracket, faArrowRightToBracket, faEnvelope, faL, faT } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { escapeHtml } from '@vue/shared'
 
 import moment from 'moment-timezone'
-import { VueElement } from 'vue'
 
 library.add(faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT, faCommentDots);
 
@@ -73,6 +62,7 @@ export default {
             required: true
         },
     },
+    emits: ["nickClick"],
     data() {
         return {
             onPageBottom: false,
@@ -88,6 +78,19 @@ export default {
                 case 'TOPIC': return 'fa-t'
                 case 'MUC_PRIVMSG': return 'fa-regular fa-comment-dots'
             }
+        },
+        getClassesForNick(message) {
+            let result = ["message-nick", `message-nick-${message.nick}`]
+            switch (message.msg_type) {
+                case 'PART_JOIN':
+                case 'TOPIC':
+                    result.push("w3-opacity")
+                    break
+                case 'PART_LEAVE':
+                    result.push("w3-grayscale")
+                    break
+            }
+            return result
         },
         formatTime(timestamp) {
             // Working with timezones using momentjs is absolute bullshit
@@ -155,6 +158,10 @@ export default {
 
 .message-link:visited {
     color: #8c97bc;
+}
+
+.message-nick {
+    cursor: pointer;
 }
 
 .topic {

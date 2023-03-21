@@ -15,23 +15,58 @@
   <main id="main" v-if="connected" style="margin-left: 286px; transition: none;">
     <TheHeader :text="activeChat.jid" @menuClick="onMenuClick" />
     <TheDatePicker :dates="activeChatDates" :current-date="getCurrentDate()" @date-selected="onDateSelected" />
-    <TheChatBox :messages="chatMessages" :tz="tz" />
-    <TheInputPrompt v-if="selectedDateIsToday" />
+
+    <div v-show="cPickerOpened" ref="picker" style="position: absolute; z-index: 9;">
+      <ColorPicker @changeColor="onSelectColor" theme="dark" :color="cPickerColor" style="width: 220px;" />
+      <button @click="closeColorPicker" class="w3-button w3-text-white" style="width: 50%; background-color: #3E1F20;">
+        Cancel
+      </button>
+      <button @click="saveNickColor" class="w3-button w3-text-white" style="width: 50%; background-color: #1C4625;">
+        Save
+      </button>
+    </div>
+
+    <TheChatBox :messages="chatMessages" :tz="tz" @nick-click="openColorPicker" />
+    <TheInputPrompt v-if="selectedDateIsToday" @message="sendMessage" />
   </main>
 </template>
 
 <script>
-import TheChatListSidebar from './components/TheChatListSidebar.vue'
-import TheHeader from './components/TheHeader.vue'
-import TheDatePicker from './components/TheDatePicker.vue'
-import TheChatBox from './components/TheChatBox.vue'
-import TheInputPrompt from './components/TheInputPrompt.vue'
 import moment from 'moment-timezone'
+import { ColorPicker } from 'vue-color-kit'
+import 'vue-color-kit/dist/vue-color-kit.css'
+import TheChatBox from './components/TheChatBox.vue'
+import TheChatListSidebar from './components/TheChatListSidebar.vue'
+import TheDatePicker from './components/TheDatePicker.vue'
+import TheHeader from './components/TheHeader.vue'
+import TheInputPrompt from './components/TheInputPrompt.vue'
 
 const chatPlaceholder = { id: 0, type: "muc", jid: "...", name: "..." }
+let nickColorsStyleSheet = null
+let nickColorStyleIndices = {}
+let nickOldColor = null
+
+function setNickColor(nick, color) {
+  if (nick in nickColorStyleIndices) {
+    nickColorsStyleSheet.rules[nickColorStyleIndices[nick]].style.color = color
+    return
+  }
+
+  let selector = `.message-nick-${nick}`
+  let rule = `color: ${color};`
+  let styleId = nickColorsStyleSheet.insertRule(`${selector} { ${rule} }`, nickColorsStyleSheet.rules.length)
+  nickColorStyleIndices[nick] = styleId
+}
+
+function getNickColor(nick) {
+  if (nick in nickColorStyleIndices) {
+    return nickColorsStyleSheet.rules[nickColorStyleIndices[nick]].style.color
+  }
+  return nickOldColor = "#fff"
+}
 
 export default {
-  components: { TheChatListSidebar, TheHeader, TheDatePicker, TheChatBox, TheInputPrompt },
+  components: { TheChatListSidebar, TheHeader, TheDatePicker, TheChatBox, TheInputPrompt, ColorPicker },
   data() {
     return {
       ws: null,
@@ -53,6 +88,9 @@ export default {
         // { type: "join", date: moment(1360013296123), nick: "Greek", text: "Greek joined" },
         // { type: "leave", date: moment(1360013296123), nick: "Greek", text: "Greek leave" },
       ],
+      cPickerOpened: false,
+      cPickerColor: "#00ff00",
+      cPickerNick: "",
     }
   },
   methods: {
@@ -64,10 +102,12 @@ export default {
           client_timezone: this.tz
         }))
       }
+      this.cPickerOpened = false
       this.activeChatId = chatId
       this.chatIdsWithUnreadBadges.delete(chatId)
     },
     onDateSelected(date) {
+      this.cPickerOpened = false
       this.selectedDate = date
       this.ws.send(JSON.stringify({
         command: "get_messages",
@@ -92,6 +132,7 @@ export default {
       this.addLog("Connected", "green")
       this.addLog("Receiving chats")
       this.updateChats()
+      this.updateNickColors()
       this.connected = true
     },
     onWebSocketDisconnected(e) {
@@ -104,6 +145,10 @@ export default {
     },
     onWebSocketMessage(e) {
       let data = JSON.parse(e.data)
+
+      if ("error" in data) {
+        console.error(data.error, data)
+      }
 
       switch (data.command) {
         case "get_chat_list":
@@ -122,8 +167,16 @@ export default {
         case "new_message":
           this.handleNewMessage(data.message)
           break
+        case "get_nick_colors":
+          this.handleNickColors(data.result)
+          break
+        // Client command results
+        case "set_nick_color":
+          break
+        case "send_message":
+          break
         default:
-          console.log("Unknown command:", data)
+          console.warn("Unknown command:", data)
       }
     },
     updateChats() {
@@ -131,9 +184,21 @@ export default {
         command: "get_chat_list"
       }))
     },
+    updateNickColors() {
+      this.ws.send(JSON.stringify({
+        command: "get_nick_colors"
+      }))
+    },
     updateSelectedDateIsToday() {
       if (!this.selectedDate) return
       this.selectedDateIsToday = this.selectedDate.format("YYYY/MMM/DD") === moment().format("YYYY/MMM/DD")
+    },
+    handleNickColors(data) {
+      if (!nickColorsStyleSheet) return
+
+      for (let colorData of data) {
+        setNickColor(colorData.nick, colorData.color)
+      }
     },
     handleNewMessage(message) {
       const utcOffset = moment.tz(this.tz).utcOffset()
@@ -176,6 +241,13 @@ export default {
     getCurrentDate() {
       return moment()
     },
+    sendMessage(text) {
+      this.ws.send(JSON.stringify({
+        command: "send_message",
+        chat_id: this.activeChatId,
+        text: text,
+      }))
+    },
     addLog(text, color = '#eee') {
       this.startupScreenLogs.push({ text: text, color: color })
     },
@@ -194,7 +266,35 @@ export default {
         this.ws.onmessage = this.onWebSocketMessage
         this.ws.onclose = this.onWebSocketDisconnected
       })
-    }
+    },
+    openColorPicker({ e, nick }) {
+      let picker = this.$refs.picker
+      console.log(e)
+      picker.style.left = e.layerX + "px"
+      picker.style.top = e.layerY + "px"
+      nickOldColor = getNickColor(nick)
+
+      this.cPickerColor = nickOldColor
+      this.cPickerNick = nick
+      this.cPickerOpened = true
+    },
+    closeColorPicker() {
+      this.cPickerOpened = false
+      setNickColor(this.cPickerNick, nickOldColor)
+    },
+    saveNickColor() {
+      this.ws.send(JSON.stringify({
+        command: "set_nick_color",
+        nick: this.cPickerNick,
+        color: this.cPickerColor,
+      }))
+
+      this.cPickerOpened = false
+    },
+    onSelectColor(color) {
+      this.cPickerColor = color.hex
+      setNickColor(this.cPickerNick, color.hex)
+    },
   },
   computed: {
     activeChat() {
@@ -215,6 +315,12 @@ export default {
   },
   mounted() {
     this.connectWebSocket()
+
+    if (!nickColorsStyleSheet) {
+      let style = document.createElement("style")
+      document.head.appendChild(style)
+      nickColorsStyleSheet = style.sheet
+    }
   },
 };
 </script>
