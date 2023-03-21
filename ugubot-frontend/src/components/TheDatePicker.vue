@@ -82,11 +82,15 @@ export default {
     components: { FontAwesomeIcon },
     methods: {
         selectLastAvailableDate() {
+            if (!this.dates) return
+            if ("..." in this.dates) return
+
             const lastAvailableYear = Math.max.apply(null, this.allYears)
             const lastAvailableMonth = this.getFirstAvailableMonth(lastAvailableYear, true)
             const lastAvailableDay = Math.max.apply(null, this.dates[lastAvailableYear][lastAvailableMonth])
             this.selectedDate.year(lastAvailableYear).month(lastAvailableMonth).date(lastAvailableDay)
             this.updateSelectedDate()
+            this.$emit('dateSelected', this.selectedDate)
         },
         updateSelectedDate() {
             this.selectedYear = this.selectedDate.format("YYYY")
@@ -110,6 +114,9 @@ export default {
             this.$emit('dateSelected', this.selectedDate)
         },
         getFirstAvailableMonth(year, reverse = false) {
+            if (!this.dates) return
+            if ("..." in this.dates) return
+
             let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Dec"]
 
             if (reverse) {
@@ -175,13 +182,21 @@ export default {
     },
     computed: {
         allYears() {
+            if (!this.dates) return []
+            if ("..." in this.dates) return
+
             return Object.keys(this.dates)
         },
         allMonths() {
-            console.log(this.selectedYear)
+            if (!this.dates) return []
+            if ("..." in this.dates) return
+
             return Object.keys(this.dates[this.selectedYear])
         },
         allDays() {
+            if (!this.dates) return []
+            if ("..." in this.dates) return
+
             return this.dates[this.selectedYear][this.selectedMonth]
         },
     },

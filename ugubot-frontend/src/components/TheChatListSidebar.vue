@@ -1,10 +1,11 @@
 <template>
-    <aside id="sidebar" class="w3-sidebar w3-collapse bg-dark fg-white">
+    <aside ref="sidebar" id="sidebar" class="w3-sidebar w3-collapse bg-dark fg-white">
         <h2 class="w3-center w3-wide w3-large bg-dark fg-cherry">
             CHATLIST
         </h2>
 
-        <button id="sidebar-close-button" class="w3-button w3-display-topright w3-hide-large w3-hover-none">
+        <button id="sidebar-close-button" class="w3-button w3-display-topright w3-hide-large w3-hover-none"
+            @click="hideSidebar">
             <FontAwesomeIcon icon="fa-close"></FontAwesomeIcon>
         </button>
 
@@ -23,7 +24,7 @@
             </h6>
         </div>
 
-        <div class="resizer-handle" min-width="144" max-width="400">
+        <div ref="resizeHandle" class="resizer-handle" min-width="144" max-width="400">
 
         </div>
     </aside>
@@ -49,6 +50,57 @@ export default {
     },
     components: { FontAwesomeIcon },
     emits: ["chatSelected"],
+    methods: {
+        setupResizeHandle(el) {
+            const resizable = el.parentElement
+            const minWidth = Number(el.attributes["min-width"].value)
+            const maxWidth = Number(el.attributes["max-width"].value)
+            const main = document.getElementById("main")
+            const body = document.getElementsByTagName("body")[0]
+
+            const preventTextSelection = () => {
+                body.style.userSelect = "none"
+            }
+
+            const allowTextSelection = () => {
+                body.style.userSelect = null
+            }
+
+            const onResize = (e) => {
+                if (e.pageX > maxWidth || e.pageX < minWidth) {
+                    return
+                }
+
+                resizable.style.width = e.pageX + "px"
+                main.style.marginLeft = e.pageX + "px"
+            }
+
+            const stopResize = (e) => {
+                window.removeEventListener("mousemove", onResize)
+                allowTextSelection()
+                localStorage.sidebarWidth = resizable.style.width
+            }
+
+            const startResize = (e) => {
+                window.addEventListener("mousemove", onResize)
+                window.addEventListener("mouseup", stopResize)
+                preventTextSelection()
+            }
+
+            el.addEventListener("mousedown", startResize)
+
+            if ("sidebarWidth" in localStorage) {
+                resizable.style.width = localStorage.sidebarWidth
+                main.style.marginLeft = localStorage.sidebarWidth
+            }
+        },
+        hideSidebar() {
+            this.$refs.sidebar.style.display = "none";
+        },
+    },
+    mounted() {
+        this.setupResizeHandle(this.$refs.resizeHandle)
+    },
 }
 </script>
 
