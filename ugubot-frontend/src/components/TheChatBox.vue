@@ -23,11 +23,11 @@
                 </b>
             </div>
 
-            <span v-if="message.msg_type === 'USER' || message.msg_type === 'MUC_PRIVMSG'" class="message-text">
-                {{ message.text }}
+            <span v-if="message.msg_type === 'USER' || message.msg_type === 'MUC_PRIVMSG'" class="message-text"
+                v-html="linkify(message.text)">
             </span>
-            <span v-else-if="message.msg_type === 'TOPIC'" class="message-text w3-text-grey">
-                set topic to &OpenCurlyDoubleQuote;{{ message.text }}&CloseCurlyDoubleQuote;
+            <span v-else-if="message.msg_type === 'TOPIC'" class="message-text w3-text-grey"
+                v-html="'set topic to «' + linkify(message.text) + '»'">
             </span>
 
             <span v-else-if="message.msg_type === 'PART_JOIN'" class="message-text w3-text-grey">
@@ -46,8 +46,10 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT } from '@fortawesome/free-solid-svg-icons'
 import { faCommentDots } from '@fortawesome/free-regular-svg-icons'
+import { escapeHtml } from '@vue/shared'
 
 import moment from 'moment-timezone'
+import { VueElement } from 'vue'
 
 library.add(faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT, faCommentDots);
 
@@ -95,6 +97,11 @@ export default {
             const localDate = moment(timestamp + utcOffset * 60 * 1000)
             return localDate.format('HH:mm:ss')
         },
+        linkify(s) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const content = escapeHtml(s)
+            return content.replace(urlRegex, '<a href="$1" class="message-link" target="_blank">$1</a>')
+        },
     },
     updated() {
         // Scroll to bottom if we was on page bottom
@@ -117,7 +124,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 #message-box {
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -135,6 +142,19 @@ export default {
 .message-text {
     display: inline-block;
     white-space: pre-wrap;
+}
+
+.message-link {
+    text-decoration: none;
+    color: #5371d5;
+}
+
+.message-link:hover {
+    text-decoration: underline;
+}
+
+.message-link:visited {
+    color: #8c97bc;
 }
 
 .topic {
