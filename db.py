@@ -39,6 +39,11 @@ class Message(db.Entity):
     text = Optional(str)
 
 
+class NickColor(db.Entity):
+    nick = Required(str, unique=True)
+    color = Required(str)
+
+
 def db_init():
     db_path = os.path.abspath(settings.database.path)
     logger.info(f"Opening database {db_path}")

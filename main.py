@@ -9,6 +9,7 @@ import db
 from config import settings
 from models import MessageModel
 from webui import app, ws_clients
+from ws_handler import outgoung_msg_queue
 from xmpp import Handler, XMPPBot
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,14 @@ async def bot_task():
 
     @bot.register_handler(Handler.MUC_USER_JOIN)
     def on_muc_user_join(member: aioxmpp.muc.Occupant, **kwargs):
-        db.store_muc_user_join(member)
+        message = db.store_muc_user_join(member)
+
+        notify_ws_clients(
+            {
+                "command": "new_message",
+                "message": MessageModel.from_orm(message).dict(),
+            }
+        )
 
     @bot.register_handler(Handler.MUC_USER_LEAVE)
     def on_muc_leave(
@@ -89,8 +97,16 @@ async def bot_task():
             continue
 
         bot.join_room(room.jid, room.nick)
+
+    async def msg_sender():
+        while True:
+            msg = await outgoung_msg_queue.get()
+            bot.send(msg)
+
     try:
-        await bot.run()
+        await asyncio.wait(
+            (bot.run(), msg_sender()), return_when=asyncio.FIRST_COMPLETED
+        )
     finally:
         bot.stop()
 

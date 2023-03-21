@@ -1,14 +1,20 @@
+import asyncio
 import logging
 import typing as t
 from datetime import datetime, timedelta
 
 import pytz
+from aioxmpp import stanza
+from aioxmpp.structs import JID, LanguageMap, LanguageTag, MessageType
 from pydantic import BaseModel
 
-from db import Chat, Message, db_session, select
+from db import Chat, Message, NickColor, db_session, select
 from models import ChatModel, MessageModel
 
 logger = logging.getLogger(__name__)
+outgoung_msg_queue = asyncio.Queue()
+
+OUTGOING_MESSAGES_LANG = LanguageTag.fromstr("en")
 
 
 class WebSocketCommandHandler:
@@ -100,6 +106,56 @@ class DatesHandler(WebSocketCommandHandler):
         return result
 
 
+class GetNickColorsHandler(WebSocketCommandHandler):
+    command = "get_nick_colors"
+
+    def handle(self):
+        with db_session:
+            return [nc.to_dict() for nc in NickColor.select()]
+
+
+class SetNickColorHandler(WebSocketCommandHandler):
+    command = "set_nick_color"
+
+    class Schema(BaseModel):
+        nick: str
+        color: str
+
+    def handle(self, nick: str, color: str):
+        with db_session:
+            nc = NickColor.select(lambda n: n.nick == nick)
+
+            if nc.exists():
+                nc.first().color = color
+            else:
+                NickColor(nick=nick, color=color)
+
+        return "OK"
+
+
+class SendMessageHandler(WebSocketCommandHandler):
+    command = "send_message"
+
+    class Schema(BaseModel):
+        chat_id: int
+        text: str
+
+    def handle(self, chat_id, text: str) -> dict:
+        with db_session:
+            chat = Chat[chat_id]
+
+        message_type = MessageType.GROUPCHAT if chat.is_muc else MessageType.CHAT
+        chat_jid = JID.fromstr(chat.jid)
+        body = LanguageMap()
+        body[OUTGOING_MESSAGES_LANG] = text
+
+        msg = stanza.Message(type_=message_type, to=chat_jid)
+        msg.body.update(body)
+
+        outgoung_msg_queue.put_nowait(msg)
+        return "OK"
+
+
 class WebSocketRouter:
     def __init__(self, handlers: t.Tuple[WebSocketCommandHandler]) -> None:
         self.handlers = {handler.command: handler for handler in handlers}
@@ -119,5 +175,8 @@ command_router = WebSocketRouter(
         ChatListHandler,
         ChatMessagesHandler,
         DatesHandler,
+        SendMessageHandler,
+        GetNickColorsHandler,
+        SetNickColorHandler,
     )
 )

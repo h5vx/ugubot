@@ -141,6 +141,9 @@ class XMPPBot:
 
         logger.info(f"Joining to room {jid}...")
         self.futures_queue.put_nowait(future)
+    
+    def send(self, stanza: aioxmpp.stanza.StanzaBase):
+        self.client.enqueue(stanza)
 
     async def run(self):
         self.running = True
