@@ -1,7 +1,7 @@
 <template>
     <div ref="container" class="w3-bottom w3-card-2">
-        <textarea v-model="input" ref="input" rows="1" type="text" class="w3-input fg-white" name="message"
-            placeholder="Write a message…" id="message-input" @input="onInput"
+        <textarea v-model="input" ref="input" rows="1" type="text" spellcheck="false" class="w3-input fg-white"
+            name="message" placeholder="Write a message…" id="message-input" @input="onInput"
             @keydown.enter.shift.exact.prevent="sendMessage"></textarea>
         <button v-if="input.length > 0" class="w3-button w3-right w3-hover-none fg-primary-light fg-hover-white"
             @click="sendMessage">
@@ -12,8 +12,8 @@
 
 <script>
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faAnglesRight } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 library.add(faAnglesRight)
 
