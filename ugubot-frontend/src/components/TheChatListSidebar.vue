@@ -15,11 +15,13 @@
                 'w3-hover-opacity-off': chat.id !== activeChatId,
                 'w3-opacity': chat.id !== activeChatId,
             }" @click="$emit('chatSelected', chat.id)">
-                <FontAwesomeIcon :icon="chat.type === 'muc' ? 'fa-comments' : 'fa-user'" :class="{
-                    chaticon: true,
-                    'w3-text-red': chat.id === activeChatId,
-                    'w3-text-grey': chat.id !== activeChatId,
-                }" />
+                <div class="chaticon">
+                    <FontAwesomeIcon :icon="chat.type === 'muc' ? 'fa-comments' : 'fa-user'" :class="{
+                        'w3-text-red': chat.id === activeChatId,
+                        'w3-text-grey': chat.id !== activeChatId,
+                    }" />
+                    <span v-if="unreadIds.has(chat.id)" class="unread-badge"></span>
+                </div>
                 {{ chat.name }}
             </h6>
         </div>
@@ -46,7 +48,11 @@ export default {
         activeChatId: {
             type: Number,
             required: true,
-        }
+        },
+        unreadIds: {
+            type: Set,
+            required: true,
+        },
     },
     components: { FontAwesomeIcon },
     emits: ["chatSelected"],
@@ -134,6 +140,8 @@ aside {
 }
 
 .chaticon {
+    display: inline-block;
+    position: relative;
     min-width: 24px;
     padding-right: 5px;
     text-align: center;
@@ -152,5 +160,16 @@ aside {
 
 #sidebar-close-button {
     padding: 12px 18px 12px 18px;
+}
+
+.unread-badge {
+    background-color: red;
+    border: 1px solid #0c0e15;
+    border-radius: 50%;
+    font-size: 10px;
+    position: absolute;
+    bottom: 0;
+    right: 2px;
+    padding: 4px 4px;
 }
 </style>

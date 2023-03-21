@@ -141,27 +141,13 @@ export default {
 
             const dayPickerScrollLeft = this.$refs.scrollLeft
             const dayPickerScrollRight = this.$refs.scrollRight
-            const scrollPercentage = 100 * dayPicker.scrollLeft / (dayPicker.scrollWidth - dayPicker.clientWidth);
+            const scrollPercentage = 100 * dayPicker.scrollLeft / (dayPicker.scrollWidth - dayPicker.clientWidth)
 
-            if (scrollPercentage > 99) {
-                dayPickerScrollRight.classList.add("w3-opacity-max");
-            }
+            const leftDisabled = (scrollPercentage == 0 || dayPicker.scrollWidth <= dayPicker.clientWidth)
+            const rightDisabled = (scrollPercentage >= 99 || dayPicker.scrollWidth <= dayPicker.clientWidth)
 
-            if (scrollPercentage == 0) {
-                dayPickerScrollLeft.classList.add("w3-opacity-max");
-            }
-
-            if (scrollPercentage > 0) {
-                dayPickerScrollLeft.classList.remove("w3-opacity-max");
-            }
-
-            if (scrollPercentage <= 99) {
-                dayPickerScrollRight.classList.remove("w3-opacity-max");
-            }
-
-            if (dayPicker.scrollWidth <= dayPicker.clientWidth) {
-                dayPickerScrollRight.classList.add("w3-opacity-max")
-            }
+            dayPickerScrollLeft.classList.toggle("w3-opacity-max", leftDisabled)
+            dayPickerScrollRight.classList.toggle("w3-opacity-max", rightDisabled)
         },
         UIUpdateDayPickerWidth() {
             const dayPicker = this.$refs.dayPicker
