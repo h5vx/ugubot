@@ -112,7 +112,7 @@ def store_muc_user_join(occupant: aioxmpp.muc.Occupant):
     now = datetime.utcnow()
     mucjid = str(occupant.conversation_jid.bare())
 
-    Message(
+    message = Message(
         chat=get_or_create_muc_chat(mucjid),
         utctime=now,
         msg_type=MessageType.PART_JOIN.value,
@@ -120,6 +120,8 @@ def store_muc_user_join(occupant: aioxmpp.muc.Occupant):
     )
 
     commit()
+
+    return message
 
 
 @db_session
@@ -133,7 +135,7 @@ def store_muc_user_leave(
     if muc_leave_mode is not None:
         text = muc_leave_mode.name
 
-    Message(
+    message = Message(
         chat=get_or_create_muc_chat(mucjid),
         utctime=now,
         msg_type=MessageType.PART_LEAVE.value,
@@ -143,6 +145,8 @@ def store_muc_user_leave(
 
     commit()
 
+    return message
+
 
 @db_session
 def store_muc_topic(member: aioxmpp.muc.ServiceMember, new_topic: str):
@@ -150,7 +154,7 @@ def store_muc_topic(member: aioxmpp.muc.ServiceMember, new_topic: str):
     mucjid = str(member.conversation_jid.bare())
     new_topic = new_topic.any()
 
-    Message(
+    message = Message(
         chat=get_or_create_muc_chat(mucjid),
         utctime=now,
         msg_type=MessageType.TOPIC.value,
@@ -160,6 +164,8 @@ def store_muc_topic(member: aioxmpp.muc.ServiceMember, new_topic: str):
 
     commit()
 
+    return message
+
 
 @db_session
 def store_muc_privmsg(message: aioxmpp.Message):
@@ -167,7 +173,7 @@ def store_muc_privmsg(message: aioxmpp.Message):
     mucjid = str(message.from_.bare())
     contact_nick = message.from_.resource
 
-    Message(
+    message = Message(
         chat=get_or_create_muc_chat(mucjid),
         utctime=now,
         msg_type=MessageType.MUC_PRIVMSG.value,
@@ -176,3 +182,5 @@ def store_muc_privmsg(message: aioxmpp.Message):
     )
 
     commit()
+
+    return message
