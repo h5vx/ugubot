@@ -7,10 +7,16 @@ import uvicorn
 
 import db
 from config import settings
-from webui import app
+from models import MessageModel
+from webui import app, ws_clients
 from xmpp import Handler, XMPPBot
 
 logger = logging.getLogger(__name__)
+
+
+def notify_ws_clients(data):
+    for _, q in ws_clients.items():
+        q.put_nowait(data)
 
 
 async def bot_task():
@@ -25,16 +31,36 @@ async def bot_task():
         barejid = message.from_.bare()
         is_muc_privmsg = bot.get_room_by_muc_jid(barejid) is not None
 
+        logger.info("Storing message...")
         if is_muc_privmsg:
-            db.store_muc_privmsg(message)
+            message_in_db = db.store_muc_privmsg(message)
         else:
-            db.store_message(message)
+            message_in_db = db.store_message(message)
+        logger.info("Message stored. Now notify clients...")
+
+        notify_ws_clients(
+            {
+                "command": "new_message",
+                "message": MessageModel.from_orm(message_in_db).dict(),
+            }
+        )
+        logger.info("Clients notified")
 
     @bot.register_handler(Handler.MUC_MESSAGE)
     def on_muc_message(
         message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
     ):
-        db.store_muc_message(message, member)
+        logger.info("Storing message...")
+        message_in_db = db.store_muc_message(message, member)
+        logger.info("Message stored. Now notify clients...")
+
+        notify_ws_clients(
+            {
+                "command": "new_message",
+                "message": MessageModel.from_orm(message_in_db).dict(),
+            }
+        )
+        logger.info("Clients notified")
 
     @bot.register_handler(Handler.MUC_USER_JOIN)
     def on_muc_user_join(member: aioxmpp.muc.Occupant, **kwargs):

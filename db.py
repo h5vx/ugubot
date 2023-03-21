@@ -74,7 +74,7 @@ def store_message(message: aioxmpp.Message):
     contact_jid = str(message.from_.bare())
     contact_nick = message.from_.localpart
 
-    Message(
+    message = Message(
         chat=get_or_create_chat(contact_jid, contact_nick),
         utctime=now,
         msg_type=MessageType.USER.value,
@@ -84,6 +84,8 @@ def store_message(message: aioxmpp.Message):
 
     commit()
 
+    return message
+
 
 @db_session
 def store_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant):
@@ -92,7 +94,7 @@ def store_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant):
     now = datetime.utcnow()
     mucjid = str(member.conversation_jid.bare())
 
-    Message(
+    message = Message(
         chat=get_or_create_muc_chat(mucjid),
         utctime=now,
         msg_type=MessageType.USER.value,
@@ -101,6 +103,8 @@ def store_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant):
     )
 
     commit()
+
+    return message
 
 
 @db_session

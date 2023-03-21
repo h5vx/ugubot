@@ -3,39 +3,12 @@ import typing as t
 from datetime import datetime, timedelta
 
 import pytz
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
-from db import Chat, Message, MessageType, db_session, select
+from db import Chat, Message, db_session, select
+from models import ChatModel, MessageModel
 
 logger = logging.getLogger(__name__)
-
-
-class MessageModel(BaseModel):
-    utctime: int
-    msg_type: str
-    nick: str
-    text: str = ""
-
-    @validator("msg_type", pre=True)
-    def get_message_type(cls, v):
-        return MessageType(v).name
-
-    @validator("utctime", pre=True)
-    def get_timestamp(cls, v):
-        return int(v.timestamp() * 1000)
-
-    class Config:
-        orm_mode = True
-
-
-class ChatModel(BaseModel):
-    id: int
-    jid: str
-    name: str
-    is_muc: bool
-
-    class Config:
-        orm_mode = True
 
 
 class WebSocketCommandHandler:
@@ -50,10 +23,14 @@ class WebSocketCommandHandler:
     def execute(self):
         try:
             data = self.Schema.parse_obj(self.message).dict()
-            return {"command": self.command, "result": self.handle(**data)}
+            data["result"] = self.handle(**data)
+            data["command"] = self.command
+            return data
         except Exception as e:
-            logger.exception("Handler {self.__class__.__name__} failed")
-            return {"command": self.command, "error": f"{e.__class__.__name__}: {e}"}
+            logger.exception(f"Handler {self.__class__.__name__} failed")
+            data["command"] = self.command
+            data["error"] = f"{e.__class__.__name__}: {e}"
+            return data
 
     def handle(self, *args, **kwargs) -> dict:
         raise NotImplemented
