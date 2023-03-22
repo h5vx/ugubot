@@ -27,7 +27,7 @@
     </div>
 
     <TheChatBox :messages="chatMessages" :tz="tz" @nick-click="openColorPicker" />
-    <TheInputPrompt v-if="selectedDateIsToday" @message="sendMessage" />
+    <TheInputPrompt v-show="selectedDateIsToday" @message="sendMessage" />
   </main>
 </template>
 
@@ -336,6 +336,8 @@ export default {
   width: 80%;
   margin: auto;
   max-width: 800px;
+  max-height: 80vh;
+  overflow: auto;
   min-height: 200px;
   padding-top: 8px;
 }

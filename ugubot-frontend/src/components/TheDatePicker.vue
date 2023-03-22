@@ -40,6 +40,10 @@
             }" @click="onSelectDate(day)">
                 {{ day }}
             </button>
+            <button v-if="selectedDay && !haveCurrentDate" class="w3-bar-item fg-hover-white w3-button btn-plus"
+                @click="addTodayDate">
+                <FontAwesomeIcon icon="fa-plus"></FontAwesomeIcon>
+            </button>
         </div>
         <button id="scroll-right" ref="scrollRight" class="w3-bar-item bg-dark fg-hover-white w3-button round-right">
             <FontAwesomeIcon icon="fa-caret-right"></FontAwesomeIcon>
@@ -48,12 +52,12 @@
 </template>
 
 <script>
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faAngleDown, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons'
-import moment from 'moment';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faAngleDown, faCaretLeft, faCaretRight, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import moment from 'moment-timezone';
 
-library.add(faAngleDown, faCaretLeft, faCaretRight);
+library.add(faAngleDown, faCaretLeft, faCaretRight, faPlus);
 
 export default {
     props: {
@@ -91,6 +95,19 @@ export default {
             this.selectedDate.year(lastAvailableYear).month(lastAvailableMonth).date(lastAvailableDay)
             this.updateSelectedDate()
             this.$emit('dateSelected', this.selectedDate)
+        },
+        addTodayDate() {
+            const [year, month, day] = moment().format("YYYY/MMM/DD").split("/")
+
+            if (!(year in this.dates)) {
+                this.dates[year] = {[month]: [day]}
+            } else if (!(month in this.dates[year])) {
+                this.dates[year][month] = [day]
+            } else if (!this.dates[year][month].includes(day)) {
+                this.dates[year][month].push(day)
+            }
+
+            this.selectLastAvailableDate()
         },
         updateSelectedDate() {
             this.selectedYear = this.selectedDate.format("YYYY")
@@ -185,6 +202,16 @@ export default {
 
             return this.dates[this.selectedYear][this.selectedMonth]
         },
+        haveCurrentDate() {
+            if (!this.dates) return false
+            const [year, month, day] = moment().format("YYYY/MMM/DD").split("/")
+
+            return (
+                year in this.dates
+                && month in this.dates[year]
+                && this.dates[year][month].includes(day)
+            )
+        },
     },
     mounted() {
         const dayPicker = this.$refs.dayPicker
@@ -264,6 +291,14 @@ export default {
     top: 0;
     overflow: visible;
     z-index: 7;
+}
+
+.btn-plus {
+    background-color: #172d2e;
+}
+
+.btn-plus:hover {
+    background-color: #1e3d3f !important;
 }
 
 .dropdown-icon {

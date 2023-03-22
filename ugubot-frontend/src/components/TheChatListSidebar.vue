@@ -14,7 +14,7 @@
                 selected: chat.id === activeChatId,
                 'w3-hover-opacity-off': chat.id !== activeChatId,
                 'w3-opacity': chat.id !== activeChatId,
-            }" @click="$emit('chatSelected', chat.id)">
+            }" @click="$emit('chatSelected', chat.id); hideSidebar()">
                 <div class="chaticon">
                     <FontAwesomeIcon :icon="chat.type === 'muc' ? 'fa-comments' : 'fa-user'" :class="{
                         'w3-text-red': chat.id === activeChatId,
@@ -26,9 +26,7 @@
             </h6>
         </div>
 
-        <div ref="resizeHandle" class="resizer-handle" min-width="144" max-width="400">
-
-        </div>
+        <div ref="resizeHandle" class="resizer-handle" min-width="144" max-width="400"></div>
     </aside>
 </template>
 
