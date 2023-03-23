@@ -10,7 +10,7 @@ from config import settings
 from models import MessageModel
 from webui import app, ws_clients
 from ws_handler import outgoung_msg_queue
-from xmpp import Handler, XMPPBot
+from xmpp import ClientVersion, Handler, XMPPBot
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,8 @@ async def bot_task():
         jid=settings.xmpp.jid,
         password=settings.xmpp.password,
         ssl_verify=settings.xmpp.ssl_verify,
+        version_info=ClientVersion(**settings.xmpp.iq.version),
+        auto_approve_subscribe=settings.xmpp.subscribes.auto_approve,
     )
 
     @bot.register_handler(Handler.MESSAGE)

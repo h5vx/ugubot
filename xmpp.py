@@ -5,10 +5,20 @@ from enum import Enum
 
 import aioxmpp
 import aioxmpp.dispatcher
-from aioxmpp.stanza import Message
+from aioxmpp import vcard
+from aioxmpp.dispatcher import SimpleMessageDispatcher
+from aioxmpp.stanza import Message, Presence
 from aioxmpp.structs import MessageType
+from aioxmpp.version.xso import Query
 
 logger = logging.getLogger(__name__)
+
+
+class ClientVersion:
+    def __init__(self, name, version, os=None) -> None:
+        self.name = name
+        self.version = version
+        self.os = os
 
 
 class Handler(Enum):
@@ -23,25 +33,34 @@ class Handler(Enum):
 
 
 class XMPPBot:
-    def __init__(self, jid: str, password: str, ssl_verify: bool) -> None:
+    def __init__(
+        self,
+        jid: str,
+        password: str,
+        ssl_verify: bool,
+        version_info: ClientVersion = None,
+        auto_approve_subscribe: bool = False,
+    ) -> None:
         jid = aioxmpp.JID.fromstr(jid)
         password = password
+
+        self.auto_approve_subscribe = auto_approve_subscribe
 
         self.client = aioxmpp.PresenceManagedClient(
             jid, aioxmpp.make_security_layer(password, no_verify=not ssl_verify)
         )
-        self.message_dispatcher = self.client.summon(
-            aioxmpp.dispatcher.SimpleMessageDispatcher
+        self.version_info = version_info or ClientVersion(None, None, None)
+        self.message_dispatcher: SimpleMessageDispatcher = (
+            self._setup_message_dispatcher()
         )
-        self.muc: aioxmpp.MUCClient = self.client.summon(aioxmpp.MUCClient)
+        self.roster: aioxmpp.RosterClient = self._setup_roster_service()
+        self.muc: aioxmpp.MUCClient = self._setup_muc_service()
 
-        self.message_dispatcher.register_callback(
-            aioxmpp.MessageType.CHAT,
-            None,
-            self.on_message,
+        self.vcard = self.client.summon(vcard.VCardService)
+
+        self.client.stream.register_iq_request_handler(
+            aioxmpp.IQType.GET, Query, self.on_iq_version_query
         )
-
-        self.muc.on_conversation_new.connect(self.on_muc_new_conversation)
 
         self.futures_queue = asyncio.Queue()
         self.running = False
@@ -59,6 +78,36 @@ class XMPPBot:
             Handler.OUTGOING_MUC_MESSAGE.value: [],
         }
 
+    def _setup_message_dispatcher(self) -> SimpleMessageDispatcher:
+        md: SimpleMessageDispatcher = self.client.summon(SimpleMessageDispatcher)
+        md.register_callback(MessageType.CHAT, None, self.on_message)
+
+        return md
+
+    def _setup_muc_service(self) -> aioxmpp.MUCClient:
+        muc: aioxmpp.MUCClient = self.client.summon(aioxmpp.MUCClient)
+        muc.on_conversation_new.connect(self.on_muc_new_conversation)
+
+        return muc
+
+    def _setup_roster_service(self) -> aioxmpp.RosterClient:
+        roster: aioxmpp.RosterClient = self.client.summon(aioxmpp.RosterClient)
+        roster.on_subscribe.connect(self.on_subscribe_request)
+        roster.on_subscribed.connect(self.on_subscribed)
+        roster.on_initial_roster_received(self.on_roster_received)
+        return roster
+
+    def on_subscribe_request(self, stanza: Presence):
+        logger.info(f"Subscribe request: {stanza}")
+        if self.auto_approve_subscribe:
+            self.roster.approve(stanza.from_)
+
+    def on_subscribed(self, stanza):
+        logger.info(f"Subscribed: {stanza}")
+
+    def on_roster_received(self):
+        logger.info(f"Roster received: {self.roster.items}")
+
     def get_room_by_muc_jid(self, muc_jid: aioxmpp.JID) -> t.Optional[aioxmpp.muc.Room]:
         for room in self.joined_rooms:
             if room.jid.localpart == muc_jid.localpart:
@@ -74,6 +123,14 @@ class XMPPBot:
             return func
 
         return deco
+
+    async def on_iq_version_query(self, iq: aioxmpp.IQ):
+        logger.info("IQ request from {!r}".format(iq.from_))
+        result = Query()
+        result.name = self.version_info.name
+        result.version = self.version_info.version
+        result.os = self.version_info.os
+        return result
 
     def on_muc_new_conversation(self, room: aioxmpp.muc.Room):
         self.joined_rooms.append(room)
