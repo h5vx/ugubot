@@ -20,6 +20,15 @@ def notify_ws_clients(data):
         q.put_nowait(data)
 
 
+def send_message_to_ws_clients(message: db.Message):
+    notify_ws_clients(
+        {
+            "command": "new_message",
+            "message": MessageModel.from_orm(message).dict(),
+        }
+    )
+
+
 async def bot_task():
     bot = XMPPBot(
         jid=settings.xmpp.jid,
@@ -37,36 +46,31 @@ async def bot_task():
         else:
             message_in_db = db.store_message(message)
 
-        notify_ws_clients(
-            {
-                "command": "new_message",
-                "message": MessageModel.from_orm(message_in_db).dict(),
-            }
-        )
+        send_message_to_ws_clients(message_in_db)
 
     @bot.register_handler(Handler.MUC_MESSAGE)
     def on_muc_message(
         message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
     ):
-        message_in_db = db.store_muc_message(message, member)
+        message = db.store_muc_message(message, member)
+        send_message_to_ws_clients(message)
 
-        notify_ws_clients(
-            {
-                "command": "new_message",
-                "message": MessageModel.from_orm(message_in_db).dict(),
-            }
-        )
+    @bot.register_handler(Handler.OUTGOING_MUC_MESSAGE)
+    def on_muc_outgoing(
+        message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
+    ):
+        message = db.store_muc_message(message, member, outgoing=True)
+        send_message_to_ws_clients(message)
+
+    @bot.register_handler(Handler.OUTGOING_MESSAGE)
+    def on_non_muc_outgoing(message: aioxmpp.Message):
+        message = db.store_message(message, outgoing=True)
+        send_message_to_ws_clients(message)
 
     @bot.register_handler(Handler.MUC_USER_JOIN)
     def on_muc_user_join(member: aioxmpp.muc.Occupant, **kwargs):
         message = db.store_muc_user_join(member)
-
-        notify_ws_clients(
-            {
-                "command": "new_message",
-                "message": MessageModel.from_orm(message).dict(),
-            }
-        )
+        send_message_to_ws_clients(message)
 
     @bot.register_handler(Handler.MUC_USER_LEAVE)
     def on_muc_leave(
@@ -75,22 +79,12 @@ async def bot_task():
         **kwargs
     ):
         message = db.store_muc_user_leave(occupant, muc_leave_mode)
-        notify_ws_clients(
-            {
-                "command": "new_message",
-                "message": MessageModel.from_orm(message).dict(),
-            }
-        )
+        send_message_to_ws_clients(message)
 
     @bot.register_handler(Handler.MUC_TOPIC_CHANGED)
     def on_topic_changed(member: aioxmpp.muc.ServiceMember, new_topic, *args, **kwargs):
         message = db.store_muc_topic(member, new_topic)
-        notify_ws_clients(
-            {
-                "command": "new_message",
-                "message": MessageModel.from_orm(message).dict(),
-            }
-        )
+        send_message_to_ws_clients(message)
 
     for _, room in settings.xmpp.rooms.items():
         if not room.join:

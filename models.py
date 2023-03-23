@@ -11,6 +11,7 @@ class MessageModel(BaseModel):
     msg_type: str
     nick: str
     text: str = ""
+    outgoing: bool
 
     @validator("msg_type", pre=True)
     def get_message_type(cls, v):

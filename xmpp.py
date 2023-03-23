@@ -1,10 +1,12 @@
 import asyncio
 import logging
+import typing as t
+from enum import Enum
 
 import aioxmpp
 import aioxmpp.dispatcher
-from enum import Enum
-import typing as t
+from aioxmpp.stanza import Message
+from aioxmpp.structs import MessageType
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,8 @@ class Handler(Enum):
     MUC_USER_JOIN = 3
     MUC_USER_LEAVE = 4
     MUC_TOPIC_CHANGED = 5
+    OUTGOING_MESSAGE = 6
+    OUTGOING_MUC_MESSAGE = 7
 
 
 class XMPPBot:
@@ -51,6 +55,8 @@ class XMPPBot:
             Handler.MUC_USER_JOIN.value: [],
             Handler.MUC_USER_LEAVE.value: [],
             Handler.MUC_TOPIC_CHANGED.value: [],
+            Handler.OUTGOING_MESSAGE.value: [],
+            Handler.OUTGOING_MUC_MESSAGE.value: [],
         }
 
     def get_room_by_muc_jid(self, muc_jid: aioxmpp.JID) -> t.Optional[aioxmpp.muc.Room]:
@@ -59,7 +65,10 @@ class XMPPBot:
                 return room
 
     def register_handler(self, handler: Handler):
-        assert handler.value in self.handlers, f"register_handler: Unknown handler {handler}"
+        assert (
+            handler.value in self.handlers
+        ), f"register_handler: Unknown handler {handler}"
+
         def deco(func):
             self.handlers[handler.value].append(func)
             return func
@@ -85,10 +94,18 @@ class XMPPBot:
                 f"[HISTORY] {member.conversation_jid.localpart}@{member.conversation_jid.domain} / {member.nick}: {message.body.any()}"
             )
             return
-        
-        logger.info(
-            f"{member.conversation_jid.localpart}@{member.conversation_jid.domain} / {member.nick}: {message.body.any()}"
-        )
+
+        log = f"{member.conversation_jid.localpart}@{member.conversation_jid.domain} / {member.nick}: {message.body.any()}"
+
+        if member.is_self:
+            logger.info(f"(outgoing) {log}")
+
+            for handler in self.handlers[Handler.OUTGOING_MUC_MESSAGE.value]:
+                handler(message, member, source, **kwargs)
+
+            return
+
+        logger.info(log)
 
         for handler in self.handlers[Handler.MUC_MESSAGE.value]:
             handler(message, member, source, **kwargs)
@@ -141,9 +158,15 @@ class XMPPBot:
 
         logger.info(f"Joining to room {jid}...")
         self.futures_queue.put_nowait(future)
-    
+
     def send(self, stanza: aioxmpp.stanza.StanzaBase):
         self.client.enqueue(stanza)
+
+        if isinstance(stanza, Message) and stanza.type_ == MessageType.CHAT:
+            stanza.from_ = self.client.local_jid
+
+            for handler in self.handlers[Handler.OUTGOING_MESSAGE.value]:
+                handler(stanza)
 
     async def run(self):
         self.running = True
