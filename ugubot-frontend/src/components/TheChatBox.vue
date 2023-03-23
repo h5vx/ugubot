@@ -1,7 +1,7 @@
 <template>
     <div ref="messageBox" id="message-box" class="bg-dark-less fg-white">
         <div v-for="message in messages" class="message w3-padding-small w3-hover-shadow"
-            :class="{ topic: message.msg_type === 'TOPIC', privmsg: message.msg_type === 'MUC_PRIVMSG' }">
+            :class="{ topic: message.msg_type === 'TOPIC', privmsg: message.msg_type === 'MUC_PRIVMSG', outgoing: message.outgoing }">
             <div class="message-meta">
                 <FontAwesomeIcon :icon="getMessageIcon(message)" class="w3-text-grey icon"
                     :class="[`icon-${message.msg_type}`]" :title="message.msg_type" />
@@ -34,13 +34,13 @@
 <script>
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faCommentDots } from '@fortawesome/free-regular-svg-icons'
-import { faArrowRightFromBracket, faArrowRightToBracket, faEnvelope, faL, faT } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRightFromBracket, faArrowRightToBracket, faEnvelope, faT, faLeftLong } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { escapeHtml } from '@vue/shared'
 
 import moment from 'moment-timezone'
 
-library.add(faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT, faCommentDots);
+library.add(faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT, faCommentDots, faLeftLong);
 
 const getScrollPercent = () => {
     const h = document.documentElement,
@@ -72,7 +72,7 @@ export default {
     methods: {
         getMessageIcon(message) {
             switch (message.msg_type) {
-                case 'USER': return 'fa-envelope'
+                case 'USER': return message.outgoing ? 'fa-left-long' : 'fa-envelope'
                 case 'PART_JOIN': return 'fa-arrow-right-to-bracket'
                 case 'PART_LEAVE': return 'fa-arrow-right-from-bracket'
                 case 'TOPIC': return 'fa-t'
@@ -164,6 +164,10 @@ export default {
     cursor: pointer;
 }
 
+.outgoing {
+    background-color: #4d052d33;
+}
+
 .topic {
     border: 1px solid #0c0e15;
     background-color: #1f263f;
@@ -183,6 +187,10 @@ export default {
 
 .icon-USER {
     color: #7089dd !important;
+}
+
+.outgoing .icon-USER {
+    color: #f5118f !important;
 }
 
 .icon-PART_JOIN {
