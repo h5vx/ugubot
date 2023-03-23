@@ -258,14 +258,19 @@ export default {
     },
     connectWebSocket() {
       this.addLog("Acknowledge websocket url...")
-      fetch('/ws_url').then(response => {
-        let wsUrl = response.json().url || "ws://localhost:8000/ws"
-        this.addLog(`Connecting to ${wsUrl}`)
-        this.ws = new WebSocket(wsUrl + "?token=" + this.getCookie("session"))
-        this.ws.onopen = this.onWebSocketConnected
-        this.ws.onmessage = this.onWebSocketMessage
-        this.ws.onclose = this.onWebSocketDisconnected
-      })
+      const localDebugWsUrl = "ws://localhost:8000/ws"
+
+      fetch('/ws_url')
+        .then(response => response.json())
+        .catch(e => {url: localDebugWsUrl})
+        .then(data => data.url)
+        .then(url => {
+          this.addLog(`Connecting to ${url}`)
+          this.ws = new WebSocket(url + "?token=" + this.getCookie("session"))
+          this.ws.onopen = this.onWebSocketConnected
+          this.ws.onmessage = this.onWebSocketMessage
+          this.ws.onclose = this.onWebSocketDisconnected
+        })
     },
     openColorPicker({ e, nick }) {
       let picker = this.$refs.picker

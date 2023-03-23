@@ -1,27 +1,38 @@
-# This to be placed to .secrets.toml
-# [xmpp]
-# jid = "user@example.com"
-# password = "password"
-# ssl_verify = false
-# 
-# [openai]
-# api_key = "your-key"
-# 
-# [webui]
+[xmpp]
+jid = "example@example.com"
+password = "your-password"
+ssl_verify = false
+
+[xmpp.subscribes]
+auto_approve = true
+
+[xmpp.iq.version]
+name = "mcabber"
+version = "1.1.2"
+# os = "TempleOS"
+
+[openai]
+api_key = "your-api-key"
+
+[webui]
+listen = 'localhost'
+port = '8000'
+debug = true
 # password_sha512 = ""
-# 
-# # Auth cookie will be signed with this key
+websocket_endpoint = "ws://localhost:8000/ws"
+
+# Auth cookie will be signed with this key
 # signing_key = ""
-# 
-# # Period after auth cookie will expire
-# # Format: <number>s/m/h/d/w (seconds, minutes, hours, days, weeks)
-# # Set to empty string to disable expiration
-# auth_expiration = "1w"
-# 
-# [xmpp.rooms.test]
-# join = true
-# jid = "test@conference.example.com"
-# nick = "User"
+
+# Period after auth cookie will expire
+# Format: <number>s/m/h/d/w (seconds, minutes, hours, days, weeks)
+# Set to empty string to disable expiration
+auth_expiration = "1w"
+
+[xmpp.rooms.test]
+join = true
+jid = "test@conference.example.com"
+nick = "Ugubot"
 
 [database]
 path = "./history.db"
@@ -38,7 +49,18 @@ formatter = "default"
 level = "INFO"
 stream = "ext://sys.stdout"
 
+[logging.handlers.debugging]
+class = "logging.StreamHandler"
+formatter = "default"
+level = "DEBUG"
+stream = "ext://sys.stdout"
+
 [logging.loggers.'']
 handlers = ["default"]
 level = "INFO"
+propagate = false
+
+[logging.loggers.aioxmpp]
+handlers = ["debugging"]
+level = "DEBUG"
 propagate = false

@@ -13,10 +13,11 @@ from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
+from starlette.types import Receive, Scope, Send
 from starlette.websockets import WebSocket
+from starlette.exceptions import HTTPException
 
 from config import settings
-from db import Chat, Message, db_session
 from util.signer import Signer
 from ws_handler import command_router
 
@@ -36,18 +37,26 @@ class SignedCookieAuthenticationBackend(AuthenticationBackend):
             return AuthCredentials(["authenticated"]), SimpleUser("someone")
 
 
+class SecuredStatic(StaticFiles):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if not scope["user"].is_authenticated:
+            raise HTTPException(404)
+
+        return await super().__call__(scope, receive, send)
+
+
 async def index(request: Request):
     if not request.user.is_authenticated:
         return RedirectResponse("/login")
 
-    return FileResponse("webui/html/chat.html")
+    return FileResponse("webui/index.html")
 
 
 async def login_page(request: Request):
     if request.user.is_authenticated:
         return RedirectResponse("/")
 
-    return FileResponse("webui/html/login.html")
+    return FileResponse("webui/login.html")
 
 
 async def login_attempt(request: Request):
@@ -106,11 +115,9 @@ async def ws(websocket: WebSocket):
         try:
             while True:
                 message = await sender_queue.get()
-                print("Queue received message:", message)
                 await websocket.send_json(message)
                 sender_queue.task_done()
         except asyncio.CancelledError:
-            print("Sender cancelled!")
             return
 
     sender_coroutine = sender()
@@ -122,12 +129,7 @@ async def ws(websocket: WebSocket):
     sender_coroutine.close()
 
     del ws_clients[client_id]
-    print("Sender queue removed")
     await websocket.close()
-
-
-async def ws_test(request):
-    return FileResponse("webui/html/ws_test.html")
 
 
 app = Starlette(
@@ -137,8 +139,8 @@ app = Starlette(
         Route("/login", login, methods=["GET", "POST"]),
         Route("/ws_url", ws_url, methods=["GET"]),
         Mount("/static", StaticFiles(directory="webui/static")),
+        Mount("/secured", SecuredStatic(directory="webui/secured")),
         WebSocketRoute("/ws", endpoint=ws),
-        Route("/ws_test", ws_test),
     ],
     middleware=[
         Middleware(
