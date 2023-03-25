@@ -110,14 +110,16 @@ class AIBot(object):
             self.messages_cache_tokens[chat_id] -= removed_message_tokens
 
     def _process_completion(self, message, completion):
+        text = completion["choices"][0]["message"]["content"]
+
         # AI is instructed to return [] when it don't want to respond
-        if completion == "[]":
+        if text == "[]":
             logger.info(f"AI return empty response for message #{message.id}")
             return
 
-        logger.info(f"AI writes: {completion}")
+        logger.info(f"AI writes: {text}")
         # AI is instructed to separate each messages with empty line
-        messages = completion.split("\n\n")
+        messages = text.split("\n\n")
 
         for msg in messages:
             outgoing_queue.put_nowait(AIMessage(chat_id=message.chat.id, text=msg))
