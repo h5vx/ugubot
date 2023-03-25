@@ -34,7 +34,7 @@ class AIBot(object):
         )
 
         self.prelude = [
-            {"role": "system", "text": prelude_text}
+            {"role": "system", "content": prelude_text}
         ] + settings.openai.prelude.example
 
         self.prelude_tokens = count_tokens_for_message(self.encoder, self.prelude)
