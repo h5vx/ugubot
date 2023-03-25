@@ -5,9 +5,11 @@ import aioxmpp
 import aioxmpp.muc
 import uvicorn
 
+import ai
 import db
 from config import settings
 from models import MessageModel
+from util.xmpp import create_message
 from webui import app, ws_clients
 from ws_handler import outgoung_msg_queue
 from xmpp import ClientVersion, Handler, XMPPBot
@@ -49,6 +51,7 @@ async def bot_task():
             message_in_db = db.store_message(message)
 
         send_message_to_ws_clients(message_in_db)
+        ai.incoming_queue.put_nowait(message_in_db)
 
     @bot.register_handler(Handler.MUC_MESSAGE)
     def on_muc_message(
@@ -56,6 +59,7 @@ async def bot_task():
     ):
         message = db.store_muc_message(message, member)
         send_message_to_ws_clients(message)
+        ai.incoming_queue.put_nowait(message)
 
     @bot.register_handler(Handler.OUTGOING_MUC_MESSAGE)
     def on_muc_outgoing(
@@ -99,10 +103,26 @@ async def bot_task():
             msg = await outgoung_msg_queue.get()
             bot.send(msg)
 
+    ai_bot = ai.AIBot()
+
+    async def ai_sender():
+        while True:
+            msg: ai.AIMessage = await ai.outgoing_queue.get()
+
+            with db.db_session:
+                chat = db.Chat[msg.chat_id]
+
+            msg_xmpp = create_message(chat.jid, msg.text, chat.is_muc)
+            bot.send(msg_xmpp)
+
     try:
-        await asyncio.wait(
-            (bot.run(), msg_sender()), return_when=asyncio.FIRST_COMPLETED
+        all_tasks = (
+            asyncio.create_task(bot.run()),
+            asyncio.create_task(msg_sender()),
+            asyncio.create_task(ai_bot.run()),
+            asyncio.create_task(ai_sender()),
         )
+        await asyncio.wait(all_tasks, return_when=asyncio.FIRST_COMPLETED)
     finally:
         bot.stop()
 

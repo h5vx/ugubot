@@ -174,8 +174,8 @@ def store_muc_topic(member: aioxmpp.muc.ServiceMember, new_topic: str):
         chat=get_or_create_muc_chat(mucjid),
         utctime=now,
         msg_type=MessageType.TOPIC.value,
-        nick=member.nick,
-        text=new_topic,
+        nick=member.nick or "<?>",
+        text=new_topic or "",
         outgoing=False,
     )
 
@@ -202,3 +202,14 @@ def store_muc_privmsg(message: aioxmpp.Message, outgoing=False):
     commit()
 
     return message
+
+
+@db_session
+def get_last_n_messages_for_ai(chat: Chat, n: int):
+    types = MessageType.USER.value, MessageType.FOR_AI.value
+
+    return reversed(
+        chat.messages.select(lambda m: m.msg_type in types)
+        .order_by(desc(Message.utctime))
+        .limit(n)
+    )

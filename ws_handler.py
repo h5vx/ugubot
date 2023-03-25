@@ -4,17 +4,14 @@ import typing as t
 from datetime import datetime, timedelta
 
 import pytz
-from aioxmpp import stanza
-from aioxmpp.structs import JID, LanguageMap, LanguageTag, MessageType
 from pydantic import BaseModel
 
 from db import Chat, Message, NickColor, db_session, select
 from models import ChatModel, MessageModel
+from util.xmpp import create_message
 
 logger = logging.getLogger(__name__)
 outgoung_msg_queue = asyncio.Queue()
-
-OUTGOING_MESSAGES_LANG = LanguageTag.fromstr("en")
 
 
 class WebSocketCommandHandler:
@@ -141,17 +138,11 @@ class SendMessageHandler(WebSocketCommandHandler):
         text: str
 
     def handle(self, chat_id, text: str) -> dict:
+
         with db_session:
             chat = Chat[chat_id]
 
-        message_type = MessageType.GROUPCHAT if chat.is_muc else MessageType.CHAT
-        chat_jid = JID.fromstr(chat.jid)
-        body = LanguageMap()
-        body[OUTGOING_MESSAGES_LANG] = text
-
-        msg = stanza.Message(type_=message_type, to=chat_jid)
-        msg.body.update(body)
-
+        msg = create_message(chat.jid, text, chat.is_muc)
         outgoung_msg_queue.put_nowait(msg)
         return "OK"
 
