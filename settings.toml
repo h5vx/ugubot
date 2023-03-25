@@ -12,11 +12,32 @@ version = "1.1.2"
 # os = "TempleOS"
 
 [openai]
+enabled = false
 api_key = "your-api-key"
+model = "gpt-3.5-turbo"
+user_nick = "bot"
+system_nick = "instructor"
+max_tokens = 4096
+tokens_reserved_for_response = 512
+timezone = "America/New_York"
+
+# Instruct your AI here
+# [openai.prelude]
+# text = """
+# You are helpful assistant.
+# """
+#
+# [[openai.prelude.example]]
+# role = "user"
+# text = "What is XMPP?"
+#
+# [[openai.prelude.example]]
+# role = "assistant"
+# text = "XMPP is extensible messaging protocol"
 
 [webui]
 listen = 'localhost'
-port = '8000'
+port = 8000
 debug = true
 # password_sha512 = ""
 websocket_endpoint = "ws://localhost:8000/ws"
@@ -32,7 +53,7 @@ auth_expiration = "1w"
 [xmpp.rooms.test]
 join = true
 jid = "test@conference.example.com"
-nick = "Ugubot"
+nick = "bot"
 
 [database]
 path = "./history.db"
@@ -61,6 +82,6 @@ level = "INFO"
 propagate = false
 
 [logging.loggers.aioxmpp]
-handlers = ["debugging"]
-level = "DEBUG"
+handlers = ["default"]
+level = "INFO"
 propagate = false
