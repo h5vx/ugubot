@@ -1,37 +1,38 @@
 import asyncio
 import logging
+import typing as t
+from uuid import UUID
 
 import aioxmpp
 import aioxmpp.muc
-import uvicorn
 
 import ai
 import db
 from config import settings
 from models import MessageModel
 from util.xmpp import create_message
-from webui import app, ws_clients
 from ws_handler import outgoung_msg_queue
 from xmpp import ClientVersion, Handler, XMPPBot
 
 logger = logging.getLogger(__name__)
 
 
-def notify_ws_clients(data):
-    for _, q in ws_clients.items():
+def notify_ws_clients(clients, data):
+    for _, q in clients.items():
         q.put_nowait(data)
 
 
-def send_message_to_ws_clients(message: db.Message):
+def send_message_to_ws_clients(clients, message: db.Message):
     notify_ws_clients(
+        clients,
         {
             "command": "new_message",
             "message": MessageModel.from_orm(message).dict(),
-        }
+        },
     )
 
 
-async def bot_task():
+async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
     bot = XMPPBot(
         jid=settings.xmpp.jid,
         password=settings.xmpp.password,
@@ -50,7 +51,7 @@ async def bot_task():
         else:
             message_in_db = db.store_message(message)
 
-        send_message_to_ws_clients(message_in_db)
+        send_message_to_ws_clients(ws_clients, message_in_db)
         ai.incoming_queue.put_nowait(message_in_db)
 
     @bot.register_handler(Handler.MUC_MESSAGE)
@@ -58,7 +59,7 @@ async def bot_task():
         message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
     ):
         message = db.store_muc_message(message, member)
-        send_message_to_ws_clients(message)
+        send_message_to_ws_clients(ws_clients, message)
         ai.incoming_queue.put_nowait(message)
 
     @bot.register_handler(Handler.OUTGOING_MUC_MESSAGE)
@@ -66,17 +67,17 @@ async def bot_task():
         message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
     ):
         message = db.store_muc_message(message, member, outgoing=True)
-        send_message_to_ws_clients(message)
+        send_message_to_ws_clients(ws_clients, message)
 
     @bot.register_handler(Handler.OUTGOING_MESSAGE)
     def on_non_muc_outgoing(message: aioxmpp.Message):
         message = db.store_message(message, outgoing=True)
-        send_message_to_ws_clients(message)
+        send_message_to_ws_clients(ws_clients, message)
 
     @bot.register_handler(Handler.MUC_USER_JOIN)
     def on_muc_user_join(member: aioxmpp.muc.Occupant, **kwargs):
         message = db.store_muc_user_join(member)
-        send_message_to_ws_clients(message)
+        send_message_to_ws_clients(ws_clients, message)
 
     @bot.register_handler(Handler.MUC_USER_LEAVE)
     def on_muc_leave(
@@ -85,12 +86,12 @@ async def bot_task():
         **kwargs
     ):
         message = db.store_muc_user_leave(occupant, muc_leave_mode)
-        send_message_to_ws_clients(message)
+        send_message_to_ws_clients(ws_clients, message)
 
     @bot.register_handler(Handler.MUC_TOPIC_CHANGED)
     def on_topic_changed(member: aioxmpp.muc.ServiceMember, new_topic, *args, **kwargs):
         message = db.store_muc_topic(member, new_topic)
-        send_message_to_ws_clients(message)
+        send_message_to_ws_clients(ws_clients, message)
 
     for _, room in settings.xmpp.rooms.items():
         if not room.join:
@@ -125,20 +126,3 @@ async def bot_task():
         await asyncio.wait(all_tasks, return_when=asyncio.FIRST_COMPLETED)
     finally:
         bot.stop()
-
-
-@app.on_event("startup")
-def main():
-    db.db_init()
-
-    loop = asyncio.get_event_loop()
-    loop.create_task(bot_task())
-
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "webui:app",
-        host=settings.webui.listen,
-        port=settings.webui.port,
-        loop="asyncio",
-    )

@@ -5,8 +5,10 @@ from asyncio.queues import Queue
 from hashlib import sha512
 from uuid import UUID, uuid4
 
+import uvicorn
 from starlette.applications import Starlette
 from starlette.authentication import AuthCredentials, AuthenticationBackend, SimpleUser
+from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.requests import Request
@@ -15,8 +17,9 @@ from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.types import Receive, Scope, Send
 from starlette.websockets import WebSocket
-from starlette.exceptions import HTTPException
 
+import db
+from bot import bot_task
 from config import settings
 from util.signer import Signer
 from ws_handler import command_router
@@ -148,3 +151,20 @@ app = Starlette(
         )
     ],
 )
+
+
+@app.on_event("startup")
+def main():
+    db.db_init()
+
+    loop = asyncio.get_event_loop()
+    loop.create_task(bot_task(ws_clients))
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "app:app",
+        host=settings.webui.listen,
+        port=settings.webui.port,
+        loop="asyncio",
+    )
