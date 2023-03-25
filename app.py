@@ -19,10 +19,8 @@ from starlette.types import Receive, Scope, Send
 from starlette.websockets import WebSocket
 
 import db
-from bot import bot_task
 from config import settings
 from util.signer import Signer
-from ws_handler import command_router
 
 cookie_signer = Signer(settings.webui.signing_key, settings.webui.auth_expiration)
 ws_clients: t.Mapping[UUID, Queue] = {}
@@ -109,6 +107,8 @@ async def ws(websocket: WebSocket):
     sender_queue = Queue()
     ws_clients[client_id] = sender_queue
 
+    from ws_handler import command_router
+
     async def receiver():
         async for message in websocket.iter_json():
             result = command_router.execute(message)
@@ -155,9 +155,10 @@ app = Starlette(
 
 @app.on_event("startup")
 def main():
+    from bot import bot_task
     db.db_init()
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     loop.create_task(bot_task(ws_clients))
 
 

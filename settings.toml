@@ -29,11 +29,11 @@ timezone = "America/New_York"
 #
 # [[openai.prelude.example]]
 # role = "user"
-# text = "What is XMPP?"
+# content = "What is XMPP?"
 #
 # [[openai.prelude.example]]
 # role = "assistant"
-# text = "XMPP is extensible messaging protocol"
+# content = "XMPP is extensible messaging protocol"
 
 [webui]
 listen = 'localhost'

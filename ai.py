@@ -62,9 +62,9 @@ class AIBot(object):
         time_str = time.strftime("%Y/%m/%d %H:%M")
 
         role = "assistant" if message.outgoing else "user"
-        text = f"{time_str} {message.nick}: {message.text}"
+        content = f"{time_str} {message.nick}: {message.text}"
 
-        return {"role": role, "text": text}
+        return {"role": role, "content": content}
 
     def _prepare_messages_cache(self):
         logger.info("Building AI messages cache")
