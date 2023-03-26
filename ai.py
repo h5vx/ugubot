@@ -126,13 +126,11 @@ class AIBot(object):
 
         logger.info(f"AI writes: {text}")
         # AI is instructed to separate each messages with empty line
-        messages = text.split("\n\n")
 
-        for msg in messages:
-            outgoing_queue.put_nowait(AIMessage(chat_id=message.chat.id, text=msg))
-            self.messages_cache[message.chat.id].append(
-                {"role": "assistant", "content": msg}
-            )
+        outgoing_queue.put_nowait(AIMessage(chat_id=message.chat.id, text=text))
+        self.messages_cache[message.chat.id].append(
+            {"role": "assistant", "content": text}
+        )
 
     async def get_completion(self, messages):
         if not settings.openai.enabled:
