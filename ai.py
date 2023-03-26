@@ -178,7 +178,7 @@ class AIBot(object):
                     logger.exception(e)
                     logger.info(f"Cache was: {self.messages_cache}")
                     logger.info(f"Tokens cache was: {self.messages_cache_tokens}")
-                    self._remove_oldest_message_in_cache()
+                    self._remove_oldest_message_in_cache(message.chat.id)
                     continue
 
             self._process_completion(message, completion)
