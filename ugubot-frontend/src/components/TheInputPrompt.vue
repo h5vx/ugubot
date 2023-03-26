@@ -2,7 +2,7 @@
     <div ref="container" class="w3-bottom w3-card-2">
         <textarea v-model="input" ref="input" rows="1" type="text" spellcheck="false" class="w3-input fg-white"
             name="message" placeholder="Write a message…" id="message-input" @input="onInput"
-            @keydown.enter.shift.exact.prevent="sendMessage"></textarea>
+            @keydown.enter.shift.exact.prevent="addNewLine" @keydown.enter.exact.prevent="sendMessage"></textarea>
         <button v-if="input.length > 0" class="w3-button w3-right w3-hover-none fg-primary-light fg-hover-white"
             @click="sendMessage">
             <FontAwesomeIcon id="send-icon" icon="fa-solid fa-angles-right"></FontAwesomeIcon>
@@ -70,11 +70,15 @@ export default {
             e.target.style.height = "auto"
             e.target.style.height = e.target.scrollHeight + "px"
         },
+        addNewLine(e) {
+            e.target.value += "\n"
+            this.onInput(e)
+        },
         sendMessage() {
             this.$emit("message", this.input)
             this.input = ""
             this.$refs.input.style.height = "auto"
-        }
+        },
     },
 }
 </script>
