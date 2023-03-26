@@ -40,6 +40,7 @@ import TheChatListSidebar from './components/TheChatListSidebar.vue'
 import TheDatePicker from './components/TheDatePicker.vue'
 import TheHeader from './components/TheHeader.vue'
 import TheInputPrompt from './components/TheInputPrompt.vue'
+import { nickEscape } from './util'
 
 const chatPlaceholder = { id: 0, type: "muc", jid: "...", name: "..." }
 let nickColorsStyleSheet = null
@@ -47,6 +48,8 @@ let nickColorStyleIndices = {}
 let nickOldColor = null
 
 function setNickColor(nick, color) {
+  nick = nickEscape(nick)
+
   if (nick in nickColorStyleIndices) {
     nickColorsStyleSheet.rules[nickColorStyleIndices[nick]].style.color = color
     return
@@ -59,6 +62,8 @@ function setNickColor(nick, color) {
 }
 
 function getNickColor(nick) {
+  nick = nickEscape(nick)
+
   if (nick in nickColorStyleIndices) {
     return nickColorsStyleSheet.rules[nickColorStyleIndices[nick]].style.color
   }
@@ -262,9 +267,10 @@ export default {
 
       fetch('/ws_url')
         .then(response => response.json())
-        .catch(e => {url: localDebugWsUrl})
         .then(data => data.url)
+        .catch(e => {url: localDebugWsUrl})
         .then(url => {
+          if (typeof url === "undefined") url = localDebugWsUrl
           this.addLog(`Connecting to ${url}`)
           this.ws = new WebSocket(url + "?token=" + this.getCookie("session"))
           this.ws.onopen = this.onWebSocketConnected

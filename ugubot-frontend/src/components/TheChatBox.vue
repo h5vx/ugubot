@@ -1,7 +1,11 @@
 <template>
     <div ref="messageBox" id="message-box" class="bg-dark-less fg-white">
-        <div v-for="message in messages" class="message w3-padding-small w3-hover-shadow"
-            :class="{ topic: message.msg_type === 'TOPIC', privmsg: message.msg_type === 'MUC_PRIVMSG', outgoing: message.outgoing }">
+        <div v-for="message in messages" class="message w3-padding-small w3-hover-shadow" :class="{
+            topic: message.msg_type === 'TOPIC',
+            privmsg: message.msg_type === 'MUC_PRIVMSG',
+            outgoing: message.outgoing,
+            'for-ai': message.msg_type === 'FOR_AI',
+        }">
             <div class="message-meta">
                 <FontAwesomeIcon :icon="getMessageIcon(message)" class="w3-text-grey icon"
                     :class="[`icon-${message.msg_type}`]" :title="message.msg_type" />
@@ -9,12 +13,12 @@
                     {{ formatTime(message.utctime) }}
                 </span>
                 <b :class="getClassesForNick(message)" @click="this.$emit('nickClick', { e: $event, nick: message.nick })">
-                    {{ message.nick }}{{ message.msg_type === 'USER' ? ':' : '' }}
+                    {{ message.nick }}{{ (message.msg_type === 'USER' || message.msg_type === 'FOR_AI') ? ':' : '' }}
                 </b>
             </div>
 
-            <span v-if="message.msg_type === 'USER' || message.msg_type === 'MUC_PRIVMSG'" class="message-text"
-                v-html="linkify(message.text)">
+            <span v-if="message.msg_type === 'USER' || message.msg_type === 'MUC_PRIVMSG' || message.msg_type === 'FOR_AI'"
+                class="message-text" v-html="linkify(message.text)">
             </span>
             <span v-else-if="message.msg_type === 'TOPIC'" class="message-text w3-text-grey"
                 v-html="'set topic to «' + linkify(message.text) + '»'">
@@ -34,13 +38,14 @@
 <script>
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faCommentDots } from '@fortawesome/free-regular-svg-icons'
-import { faArrowRightFromBracket, faArrowRightToBracket, faEnvelope, faT, faLeftLong } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRightFromBracket, faArrowRightToBracket, faEnvelope, faLeftLong, faT, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { escapeHtml } from '@vue/shared'
+import { nickEscape } from '../util'
 
 import moment from 'moment-timezone'
 
-library.add(faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT, faCommentDots, faLeftLong);
+library.add(faEnvelope, faArrowRightFromBracket, faArrowRightToBracket, faT, faCommentDots, faLeftLong, faWandMagicSparkles);
 
 const getScrollPercent = () => {
     const h = document.documentElement,
@@ -77,10 +82,13 @@ export default {
                 case 'PART_LEAVE': return 'fa-arrow-right-from-bracket'
                 case 'TOPIC': return 'fa-t'
                 case 'MUC_PRIVMSG': return 'fa-regular fa-comment-dots'
+                case 'FOR_AI': return 'fa-wand-magic-sparkles'
             }
         },
         getClassesForNick(message) {
-            let result = ["message-nick", `message-nick-${message.nick}`]
+            const messageNick = nickEscape(message.nick)
+
+            let result = ["message-nick", `message-nick-${messageNick}`]
             switch (message.msg_type) {
                 case 'PART_JOIN':
                 case 'TOPIC':
@@ -168,6 +176,10 @@ export default {
     background-color: #4d052d33;
 }
 
+.for-ai {
+    background-color: #ffff0022;
+}
+
 .topic {
     border: 1px solid #0c0e15;
     background-color: #1f263f;
@@ -203,5 +215,9 @@ export default {
 
 .icon-MUC_PRIVMSG {
     color: skyblue !important;
+}
+
+.icon-FOR_AI {
+    color: orange !important;
 }
 </style>
