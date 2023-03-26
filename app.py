@@ -67,11 +67,18 @@ async def login_attempt(request: Request):
     async with request.form() as form:
         token = form.get("token", "")
 
-        given = sha512(token.encode("utf-8")).hexdigest().encode("utf-8")
-        expected = settings.webui.password_sha512.encode("utf-8")
+    allow_access = False
+    given = sha512(token.encode("utf-8")).hexdigest().encode("utf-8")
 
-        if not secrets.compare_digest(given, expected):
-            return JSONResponse({}, status_code=401)
+    for expected in settings.webui.passwords_sha512:
+        expected = expected.encode("utf-8")
+
+        if secrets.compare_digest(given, expected):
+            allow_access = True
+            break
+
+    if not allow_access:
+        return JSONResponse({}, status_code=401)
 
     session_cookie = SignedCookieAuthenticationBackend.COOKIE_NAME
     new_token = cookie_signer.get_signed_token()
