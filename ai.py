@@ -184,5 +184,5 @@ class AIBot(object):
                     self._remove_oldest_message_in_cache(message.chat.id)
                     continue
 
-            if not Failed:
+            if not failed:
                 self._process_completion(message, completion)
