@@ -1,0 +1,6 @@
+.secrets.toml
+.git
+ugubot-frontend/
+*.db
+__pycache__
+*.pyc
