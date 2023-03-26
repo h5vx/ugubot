@@ -11,7 +11,7 @@ from models import ChatModel, MessageModel
 from util.xmpp import create_message
 
 logger = logging.getLogger(__name__)
-outgoung_msg_queue = asyncio.Queue()
+outgoing_queue = asyncio.Queue()
 
 
 class WebSocketCommandHandler:
@@ -143,7 +143,7 @@ class SendMessageHandler(WebSocketCommandHandler):
             chat = Chat[chat_id]
 
         msg = create_message(chat.jid, text, chat.is_muc)
-        outgoung_msg_queue.put_nowait(msg)
+        outgoing_queue.put_nowait(msg)
         return "OK"
 
 

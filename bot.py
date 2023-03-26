@@ -11,7 +11,7 @@ import db
 from config import settings
 from models import MessageModel
 from util.xmpp import create_message
-from ws_handler import outgoung_msg_queue
+from ws_handler import outgoing_queue
 from xmpp import ClientVersion, Handler, XMPPBot
 
 logger = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
 
     async def msg_sender():
         while True:
-            msg = await outgoung_msg_queue.get()
+            msg = await outgoing_queue.get()
             bot.send(msg)
 
     ai_bot = ai.AIBot()
