@@ -106,7 +106,7 @@ class AIBot(object):
         while self.messages_cache_tokens[chat_id] > self.max_input_tokens:
             removed_message = self.messages_cache[chat_id].pop(0)
             removed_message_tokens = count_tokens_for_message(
-                self.encoder, removed_message
+                self.encoder, [removed_message]
             )
             self.messages_cache_tokens[chat_id] -= removed_message_tokens
 
