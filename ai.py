@@ -125,7 +125,9 @@ class AIBot(object):
 
         for msg in messages:
             outgoing_queue.put_nowait(AIMessage(chat_id=message.chat.id, text=msg))
-            self.messages_cache[message.chat.id].append({"role": "assistant", "content": msg})
+            self.messages_cache[message.chat.id].append(
+                {"role": "assistant", "content": msg}
+            )
 
     async def get_completion(self, messages):
         if not settings.openai.enabled:
@@ -150,6 +152,15 @@ class AIBot(object):
                 self._cache_new_message(message)
             except ValueError as e:
                 logger.warn(str(e))
+                continue
+
+            if message.chat.is_muc and not message.text.startswith(
+                settings.openai.user_nick
+            ):
+                logger.info(
+                    "Skip creating completion, because message doesn't starts with "
+                    + settings.openai.user_nick
+                )
                 continue
 
             try:
