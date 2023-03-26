@@ -34,7 +34,7 @@ class AIBot(object):
         )
 
         self.prelude = [
-            {"role": "system", "content": prelude_text}
+            {"role": "user", "content": prelude_text}
         ] + settings.openai.prelude.example
 
         self.prelude_tokens = count_tokens_for_message(self.encoder, self.prelude)
@@ -62,7 +62,7 @@ class AIBot(object):
         time_str = time.strftime("%Y/%m/%d %H:%M")
 
         role = "assistant" if message.outgoing else "user"
-        content = f"{time_str} {message.nick}: {message.text}"
+        content = f"{message.nick}: {message.text}"
 
         return {"role": role, "content": content}
 
@@ -99,7 +99,9 @@ class AIBot(object):
         if message_tokens > self.max_input_tokens:
             raise ValueError(f"Message #{message.id} is too big for AI")
 
-        self.messages_cache[chat_id].append(message_data)
+        self.messages_cache.setdefault(chat_id, []).append(message_data)
+        self.messages_cache_tokens.setdefault(chat_id, self.prelude_tokens)
+
         self.messages_cache_tokens[chat_id] += message_tokens
 
         while self.messages_cache_tokens[chat_id] > self.max_input_tokens:
@@ -113,7 +115,7 @@ class AIBot(object):
         text = completion["choices"][0]["message"]["content"]
 
         # AI is instructed to return [] when it don't want to respond
-        if text == "[]":
+        if text in ("[]", "[[]]"):
             logger.info(f"AI return empty response for message #{message.id}")
             return
 
