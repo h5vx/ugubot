@@ -169,7 +169,7 @@ class AIBot(object):
                 )
                 continue
 
-            attempts = 5
+            attempts = 2
             failed = False
 
             while attempts > 0:
@@ -183,9 +183,10 @@ class AIBot(object):
                     failed = True
                     attempts -= 1
                     logger.exception(e)
-                    logger.info(f"Cache was: {self.messages_cache}")
                     logger.info(f"Tokens cache was: {self.messages_cache_tokens}")
-                    self._remove_oldest_message_in_cache(message.chat.id)
+                    self.messages_cache[message.chat.id] = []
+                    self.messages_cache_tokens[message.chat.id] = 0
+                    self._cache_new_message(message)
                     continue
 
             if not failed:
