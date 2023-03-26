@@ -14,5 +14,12 @@ export default defineConfig({
   build: {
     outDir: "../webui/",
     assetsDir: "secured",
+    rollupOptions: {
+      output: {
+        entryFileNames: `secured/[name].js`,
+        chunkFileNames: `secured/[name].js`,
+        assetFileNames: `secured/[name].[ext]`
+      }
+    },
   },
 })
