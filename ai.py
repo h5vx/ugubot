@@ -91,6 +91,9 @@ class AIBot(object):
         logger.info("AI messages cache was built")
 
     def _remove_oldest_message_in_cache(self, chat_id: int):
+        if chat_id not in self.messages_cache or not self.messages_cache[chat_id]:
+            return
+
         removed_message = self.messages_cache[chat_id].pop(0)
         removed_message_tokens = count_tokens_for_message(
             self.encoder, [removed_message]
