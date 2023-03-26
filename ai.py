@@ -167,13 +167,16 @@ class AIBot(object):
                 continue
 
             attempts = 5
+            failed = False
 
             while attempts > 0:
                 try:
                     completion = await self.get_completion(
                         self.prelude + self.messages_cache[message.chat.id]
                     )
+                    failed = False
                 except Exception as e:
+                    failed = True
                     attempts -= 1
                     logger.exception(e)
                     logger.info(f"Cache was: {self.messages_cache}")
@@ -181,4 +184,5 @@ class AIBot(object):
                     self._remove_oldest_message_in_cache(message.chat.id)
                     continue
 
-            self._process_completion(message, completion)
+            if not Failed:
+                self._process_completion(message, completion)
