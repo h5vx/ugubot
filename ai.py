@@ -175,6 +175,7 @@ class AIBot(object):
                         self.prelude + self.messages_cache[message.chat.id]
                     )
                     failed = False
+                    break
                 except Exception as e:
                     failed = True
                     attempts -= 1
