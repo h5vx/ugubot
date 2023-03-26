@@ -103,7 +103,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
         while True:
             msg: OutgoingMessage = await outgoing_queue.get()
             msg_xmpp = create_message(msg.jid, msg.text, msg.is_muc)
-            message_in_db = db.store_message_for_ai(msg_xmpp)
+            message_in_db = db.store_message_for_ai(msg_xmpp, msg.is_muc)
 
             if msg.for_ai:
                 ai.incoming_queue.put_nowait(message_in_db)

@@ -122,11 +122,18 @@ def store_muc_message(
 
 
 @db_session
-def store_message_for_ai(message: aioxmpp.Message):
+def store_message_for_ai(message: aioxmpp.Message, is_muc: bool):
     now = datetime.utcnow()
 
+    contact_jid = str(message.to.bare())
+
+    if is_muc:
+        chat = get_or_create_muc_chat(contact_jid)
+    else:
+        chat = get_or_create_chat(contact_jid, message.to.localpart)
+
     message = Message(
-        chat=get_or_create_muc_chat(str(message.to.bare())),
+        chat=chat,
         utctime=now,
         msg_type=MessageType.FOR_AI.value,
         nick="[FOR AI]",
