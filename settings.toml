@@ -39,7 +39,7 @@ timezone = "America/New_York"
 listen = 'localhost'
 port = 8000
 debug = true
-# password_sha512 = ""
+# passwords_sha512 = ["", ""]
 websocket_endpoint = "ws://localhost:8000/ws"
 
 # Auth cookie will be signed with this key
@@ -82,6 +82,6 @@ level = "INFO"
 propagate = false
 
 [logging.loggers.aioxmpp]
-handlers = ["default"]
-level = "INFO"
+handlers = ["debugging"]
+level = "DEBUG"
 propagate = false

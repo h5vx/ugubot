@@ -122,6 +122,24 @@ def store_muc_message(
 
 
 @db_session
+def store_message_for_ai(message: aioxmpp.Message):
+    now = datetime.utcnow()
+
+    message = Message(
+        chat=get_or_create_muc_chat(str(message.to.bare())),
+        utctime=now,
+        msg_type=MessageType.FOR_AI.value,
+        nick="[FOR AI]",
+        text=message.body.any(),
+        outgoing=True,
+    )
+
+    commit()
+
+    return message
+
+
+@db_session
 def store_muc_user_join(occupant: aioxmpp.muc.Occupant):
     now = datetime.utcnow()
     mucjid = str(occupant.conversation_jid.bare())

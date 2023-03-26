@@ -9,9 +9,18 @@ from pydantic import BaseModel
 from db import Chat, Message, NickColor, db_session, select
 from models import ChatModel, MessageModel
 from util.xmpp import create_message
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 outgoing_queue = asyncio.Queue()
+
+
+@dataclass
+class OutgoingMessage:
+    jid: str
+    is_muc: bool
+    text: str
+    for_ai: bool
 
 
 class WebSocketCommandHandler:
@@ -138,11 +147,15 @@ class SendMessageHandler(WebSocketCommandHandler):
         text: str
 
     def handle(self, chat_id, text: str) -> dict:
-
         with db_session:
             chat = Chat[chat_id]
 
-        msg = create_message(chat.jid, text, chat.is_muc)
+        for_ai = text.startswith("!!")
+
+        msg = OutgoingMessage(
+            jid=chat.jid, is_muc=chat.is_muc, text=text, for_ai=for_ai
+        )
+        # msg = create_message(chat.jid, text, chat.is_muc)
         outgoing_queue.put_nowait(msg)
         return "OK"
 

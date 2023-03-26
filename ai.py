@@ -1,5 +1,4 @@
 import logging
-import typing as t
 from asyncio import Queue
 from dataclasses import dataclass
 
@@ -7,7 +6,7 @@ import openai
 import pytz
 
 from config import settings
-from db import Chat, Message, db_session, get_last_n_messages_for_ai
+from db import Chat, Message, db_session, get_last_n_messages_for_ai, MessageType
 from util.token_counter import count_tokens_for_message, get_encoder_for_model
 
 logger = logging.getLogger(__name__)
@@ -131,8 +130,7 @@ class AIBot(object):
 
     async def get_completion(self, messages):
         if not settings.openai.enabled:
-            logger.info("AI is disabled, so we simulate empty response")
-            return "[]"
+            raise ValueError("AI is disabled, so we simulate empty response")
 
         result = await openai.ChatCompletion.acreate(
             model=settings.openai.model,
@@ -144,7 +142,7 @@ class AIBot(object):
 
     async def run(self):
         while True:
-            message = await incoming_queue.get()
+            message: Message = await incoming_queue.get()
 
             logger.info(f"Start AI completion for message #{message.id}")
 
@@ -154,8 +152,10 @@ class AIBot(object):
                 logger.warn(str(e))
                 continue
 
-            if message.chat.is_muc and not message.text.startswith(
-                settings.openai.user_nick
+            if (
+                not message.msg_type == MessageType.FOR_AI.value
+                and message.chat.is_muc
+                and not message.text.startswith(settings.openai.user_nick)
             ):
                 logger.info(
                     "Skip creating completion, because message doesn't starts with "
