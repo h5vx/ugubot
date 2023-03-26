@@ -152,6 +152,9 @@ class SendMessageHandler(WebSocketCommandHandler):
 
         for_ai = text.startswith("!!")
 
+        if for_ai:
+            text = text[2:]
+
         msg = OutgoingMessage(
             jid=chat.jid, is_muc=chat.is_muc, text=text, for_ai=for_ai
         )
