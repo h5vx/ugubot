@@ -90,6 +90,13 @@ class AIBot(object):
 
         logger.info("AI messages cache was built")
 
+    def _remove_oldest_message_in_cache(self, chat_id: int):
+        removed_message = self.messages_cache[chat_id].pop(0)
+        removed_message_tokens = count_tokens_for_message(
+            self.encoder, [removed_message]
+        )
+        self.messages_cache_tokens[chat_id] -= removed_message_tokens
+
     def _cache_new_message(self, message):
         message_data = self._db_message_to_ai_message(message)
         message_tokens = count_tokens_for_message(self.encoder, [message_data])
@@ -104,11 +111,7 @@ class AIBot(object):
         self.messages_cache_tokens[chat_id] += message_tokens
 
         while self.messages_cache_tokens[chat_id] > self.max_input_tokens:
-            removed_message = self.messages_cache[chat_id].pop(0)
-            removed_message_tokens = count_tokens_for_message(
-                self.encoder, [removed_message]
-            )
-            self.messages_cache_tokens[chat_id] -= removed_message_tokens
+            self._remove_oldest_message_in_cache(chat_id)
 
     def _process_completion(self, message, completion):
         text = completion["choices"][0]["message"]["content"]
@@ -163,12 +166,19 @@ class AIBot(object):
                 )
                 continue
 
-            try:
-                completion = await self.get_completion(
-                    self.prelude + self.messages_cache[message.chat.id]
-                )
-            except Exception as e:
-                logger.warn(e)
-                continue
+            attempts = 5
+
+            while attempts > 0:
+                try:
+                    completion = await self.get_completion(
+                        self.prelude + self.messages_cache[message.chat.id]
+                    )
+                except Exception as e:
+                    attempts -= 1
+                    logger.exception(e)
+                    logger.info(f"Cache was: {self.messages_cache}")
+                    logger.info(f"Tokens cache was: {self.messages_cache_tokens}")
+                    self._remove_oldest_message_in_cache()
+                    continue
 
             self._process_completion(message, completion)
