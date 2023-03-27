@@ -99,7 +99,8 @@ class AIBot(object):
 
     def _db_message_to_ai_message(self, message: Message):
         role = "assistant" if message.outgoing else "user"
-        content = f"{message.nick}: {message.text}"
+        nick = f"{message.nick}: " if message.nick != "[FOR AI]" else ""
+        content = nick + message.text
 
         return {"role": role, "content": content}
 
