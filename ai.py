@@ -176,10 +176,12 @@ class AIBot(object):
             self._rotate_cache(message.chat.id, text, role="assistant")
 
     def _process_input(self, message: Message) -> t.Tuple[str, Action]:
+        text = message.text
+
         if text.startswith(settings.openai.user_nick):
             text = text[len(settings.openai.user_nick) + 1 :]
 
-        text = message.text.strip()
+        text = text.strip()
 
         commands = []
 
