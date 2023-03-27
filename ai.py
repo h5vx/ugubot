@@ -176,12 +176,10 @@ class AIBot(object):
             self._rotate_cache(message.chat.id, text, role="assistant")
 
     def _process_input(self, message: Message) -> t.Tuple[str, Action]:
-        text = message.text
+        text = message.text.strip()
 
         if text.startswith(settings.openai.user_nick):
-            text = text[len(settings.openai.user_nick) + 1 :]
-
-        text = text.strip()
+            text = text[len(settings.openai.user_nick) + 1 :].strip()
 
         commands = []
 
@@ -195,6 +193,8 @@ class AIBot(object):
 
             if command not in commands:
                 commands.append(command)
+
+        logger.info(f"Parsed commands: {commands}")
 
         for command in commands:
             if command == "~dan":
