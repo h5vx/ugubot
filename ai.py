@@ -328,7 +328,7 @@ class AIBot(object):
                 continue
 
             if action is self.Action.TO_AI:
-                self._rotate_cache(message.chat.id, text)
+                self._rotate_cache(message.chat.id, message.text)
 
             attempts = 2
             failed = False
@@ -336,9 +336,13 @@ class AIBot(object):
 
             while attempts > 0:
                 try:
-                    completion = await self.get_completion(
-                        self.prelude + self.messages_cache[message.chat.id]
-                    )
+                    if action is self.Action.TO_AI_NO_CACHE:
+                        completion = await self.get_completion(self.prelude + text)
+                    else:
+                        completion = await self.get_completion(
+                            self.prelude + self.messages_cache[message.chat.id]
+                        )
+
                     failed = False
                     break
                 except Exception as e:
@@ -346,7 +350,11 @@ class AIBot(object):
                     logger.info(f"Tokens cache was: {self.messages_cache_tokens}")
 
                     self._clear_cache(message.chat.id)
-                    self._rotate_cache(message.chat.id, message.text)
+
+                    if action is self.Action.TO_AI_NO_CACHE:
+                        self._rotate_cache(message.chat.id, text)
+                    else:
+                        self._rotate_cache(message.chat.id, message.text)
 
                     cache_was_cleared = True
                     failed = True
