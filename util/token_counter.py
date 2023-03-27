@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def get_encoder_for_model(model):
     if model == "gpt-3.5-turbo":
-        return tiktoken.encoding_for_model("gpt-3.5-turbo-0301")
+        return tiktoken.encoding_for_model("gpt-3.5-turbo-0301") + 8
 
     if model == "gpt-4":
         return tiktoken.encoding_for_model("gpt-4-0314")
