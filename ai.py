@@ -230,17 +230,34 @@ class AIBot(object):
                 if len(chat_cache) > 6:
                     for n, msg in enumerate(chat_cache[:3], 1):
                         shortened_msg = shorten(msg["content"], 30, placeholder="…")
-                        result.append(f"{n}: {shortened_msg}")
+                        token_count = count_tokens_for_message(self.encoder, [msg])
+                        result.append(f"{n}: {shortened_msg} ({token_count} tok)")
 
                     result.append(f"< ... {len(chat_cache)- 6} пропущено ... >")
 
                     for n, msg in enumerate(chat_cache[-3:], len(chat_cache) - 2):
                         shortened_msg = shorten(msg["content"], 30, placeholder="…")
-                        result.append(f"{n}: {shortened_msg}")
+                        token_count = count_tokens_for_message(self.encoder, [msg])
+                        result.append(f"{n}: {shortened_msg} ({token_count} tok)")
                 else:
                     for n, msg in enumerate(chat_cache, 1):
                         shortened_msg = shorten(msg["content"], 30, placeholder="…")
                         result.append(f"{n}: {shortened_msg}")
+
+                total_token_count = self.messages_cache_tokens[message.chat.id]
+                total_token_count_plural = pluralize(
+                    total_token_count, "токен", "токенов", "токена"
+                )
+                prelude_token_count_plural = pluralize(
+                    self.prelude_tokens, "токен", "токенов", "токена"
+                )
+
+                result.append(
+                    (
+                        f"В кеше {total_token_count} {total_token_count_plural}, "
+                        + f"для прелюдии используется {self.prelude_tokens} {prelude_token_count_plural}"
+                    )
+                )
 
                 result = "\n".join(result)
 
