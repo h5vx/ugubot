@@ -337,7 +337,9 @@ class AIBot(object):
             while attempts > 0:
                 try:
                     if action is self.Action.TO_AI_NO_CACHE:
-                        completion = await self.get_completion(self.prelude + text)
+                        completion = await self.get_completion(
+                            self.prelude + [{"role": "user", "content": text}]
+                        )
                     else:
                         completion = await self.get_completion(
                             self.prelude + self.messages_cache[message.chat.id]
