@@ -116,7 +116,7 @@ class AIBot(object):
 
                 for msg in get_last_n_messages_for_ai(chat, 300):
                     if chat.is_muc and not msg.text.startswith(
-                        openai.settings.user_nick
+                        settings.openai.user_nick
                     ):
                         continue
 
