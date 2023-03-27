@@ -115,8 +115,10 @@ class AIBot(object):
                 self.messages_cache.setdefault(chat.id, [])
 
                 for msg in get_last_n_messages_for_ai(chat, 300):
-                    if chat.is_muc and not msg.text.startswith(
-                        settings.openai.user_nick
+                    if (
+                        chat.is_muc
+                        and msg.nick != settings.openai.user_nick
+                        and not msg.text.startswith(settings.openai.user_nick)
                     ):
                         continue
 
