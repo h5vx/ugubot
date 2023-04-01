@@ -76,7 +76,7 @@ def get_or_create_chat(jid: str, name: str):
 
 @db_session
 def store_message(message: aioxmpp.Message, outgoing=False):
-    logger.debug("Storing message", message)
+    logger.debug(f"Storing message {message}")
 
     now = datetime.utcnow()
 
