@@ -206,7 +206,7 @@ export default {
       }
     },
     handleNewMessage(message) {
-      const localDate = moment.tz(this.tz).utc(message.utctime)
+      const localDate = moment(message.utctime)
       const year = localDate.format("YYYY")
       const month = localDate.format("MMM")
       const day = localDate.format("DD")

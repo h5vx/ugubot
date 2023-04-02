@@ -101,7 +101,7 @@ export default {
             return result
         },
         formatTime(timestamp) {
-            return moment.tz(this.tz).utc(timestamp).format('HH:mm:ss')
+            return moment(timestamp).format('HH:mm:ss')
         },
         linkify(s) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
