@@ -1,5 +1,6 @@
-import typing as t
+from datetime import datetime
 
+import pytz
 from pydantic import BaseModel, root_validator, validator
 
 from db import MessageType
@@ -18,8 +19,9 @@ class MessageModel(BaseModel):
         return MessageType(v).name
 
     @validator("utctime", pre=True)
-    def get_timestamp(cls, v):
-        return int(v.timestamp() * 1000)
+    def get_timestamp(cls, v: datetime):
+        dt_utc = pytz.utc.normalize(pytz.utc.localize(v))
+        return int(dt_utc.timestamp() * 1000)
 
     @validator("chat", pre=True)
     def get_chat_id(cls, v):

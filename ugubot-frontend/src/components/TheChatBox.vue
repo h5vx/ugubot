@@ -101,12 +101,7 @@ export default {
             return result
         },
         formatTime(timestamp) {
-            // Working with timezones using momentjs is absolute bullshit
-            // I spent half an hour trying to do UTC timestamp conversion to local time
-            // and at the end just fuck it, so we adding utcoffset manually to timestamp
-            const utcOffset = moment.tz(this.tz).utcOffset()
-            const localDate = moment(timestamp + utcOffset * 60 * 1000)
-            return localDate.format('HH:mm:ss')
+            return moment.tz(this.tz).utc(timestamp).format('HH:mm:ss')
         },
         linkify(s) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;

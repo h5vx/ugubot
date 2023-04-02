@@ -206,8 +206,7 @@ export default {
       }
     },
     handleNewMessage(message) {
-      const utcOffset = moment.tz(this.tz).utcOffset()
-      const localDate = moment(message.utctime + utcOffset * 60 * 1000)
+      const localDate = moment.tz(this.tz).utc(message.utctime)
       const year = localDate.format("YYYY")
       const month = localDate.format("MMM")
       const day = localDate.format("DD")
@@ -268,7 +267,7 @@ export default {
       fetch('/ws_url')
         .then(response => response.json())
         .then(data => data.url)
-        .catch(e => {url: localDebugWsUrl})
+        .catch(e => { url: localDebugWsUrl })
         .then(url => {
           if (typeof url === "undefined") url = localDebugWsUrl
           this.addLog(`Connecting to ${url}`)
