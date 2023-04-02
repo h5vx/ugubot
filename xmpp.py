@@ -6,7 +6,6 @@ from enum import Enum
 import aioxmpp
 import aioxmpp.dispatcher
 from aioxmpp import vcard
-from aioxmpp.dispatcher import SimpleMessageDispatcher
 from aioxmpp.stanza import Message, Presence
 from aioxmpp.structs import MessageType
 from aioxmpp.version.xso import Query
@@ -32,7 +31,7 @@ class Handler(Enum):
     OUTGOING_MUC_MESSAGE = 7
 
 
-class XMPPBot:
+class XMPPClient:
     def __init__(
         self,
         jid: str,
@@ -50,9 +49,6 @@ class XMPPBot:
             jid, aioxmpp.make_security_layer(password, no_verify=not ssl_verify)
         )
         self.version_info = version_info or ClientVersion(None, None, None)
-        self.message_dispatcher: SimpleMessageDispatcher = (
-            self._setup_message_dispatcher()
-        )
         self.roster: aioxmpp.RosterClient = self._setup_roster_service()
         self.muc: aioxmpp.MUCClient = self._setup_muc_service()
 
@@ -60,6 +56,9 @@ class XMPPBot:
 
         self.client.stream.register_iq_request_handler(
             aioxmpp.IQType.GET, Query, self.on_iq_version_query
+        )
+        self.client.stream.register_message_callback(
+            MessageType.CHAT, None, self.on_message
         )
 
         self.futures_queue = asyncio.Queue()
@@ -77,12 +76,6 @@ class XMPPBot:
             Handler.OUTGOING_MESSAGE.value: [],
             Handler.OUTGOING_MUC_MESSAGE.value: [],
         }
-
-    def _setup_message_dispatcher(self) -> SimpleMessageDispatcher:
-        md: SimpleMessageDispatcher = self.client.summon(SimpleMessageDispatcher)
-        md.register_callback(MessageType.CHAT, None, self.on_message)
-
-        return md
 
     def _setup_muc_service(self) -> aioxmpp.MUCClient:
         muc: aioxmpp.MUCClient = self.client.summon(aioxmpp.MUCClient)
@@ -136,7 +129,10 @@ class XMPPBot:
         self.joined_rooms.append(room)
 
     def on_message(self, msg: aioxmpp.Message):
-        logger.info(f">> {msg.from_}: {msg.body.any()}")
+        logger.info(f">> {msg}: {msg.body}")
+
+        if len(msg.body) == 0:
+            return
 
         for handler in self.handlers[Handler.MESSAGE.value]:
             handler(msg)

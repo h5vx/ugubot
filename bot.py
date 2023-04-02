@@ -11,8 +11,8 @@ import db
 from config import settings
 from models import MessageModel
 from util.xmpp import create_message
-from ws_handler import outgoing_queue, OutgoingMessage
-from xmpp import ClientVersion, Handler, XMPPBot
+from ws_handler import OutgoingMessage, outgoing_queue
+from xmpp import ClientVersion, Handler, XMPPClient
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def send_message_to_ws_clients(clients, message: db.Message):
 
 
 async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
-    bot = XMPPBot(
+    bot = XMPPClient(
         jid=settings.xmpp.jid,
         password=settings.xmpp.password,
         ssl_verify=settings.xmpp.ssl_verify,
