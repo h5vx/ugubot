@@ -195,7 +195,7 @@ class AIBot(object):
             if command not in commands:
                 commands.append(command)
 
-        logger.info(f"Parsed commands: {commands}")
+        logger.info(f"Parsed commands: {commands}, text: {text}")
 
         for command in commands:
             if command == "~dan":
