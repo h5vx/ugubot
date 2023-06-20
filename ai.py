@@ -319,6 +319,10 @@ class AIBot(object):
                 outgoing_queue.put_nowait(AIMessage(chat_id=message.chat.id, text=text))
                 continue
 
+            if not text:
+                logger.info("Processed message seems empty. Completion aborted")
+                continue
+
             if action is self.Action.TO_AI:
                 try:
                     self._rotate_cache(message.chat.id, text)
