@@ -321,7 +321,7 @@ class AIBot(object):
 
             if action is self.Action.TO_AI:
                 try:
-                    self._rotate_cache(message.chat.id, message.text)
+                    self._rotate_cache(message.chat.id, text)
                 except ValueError as e:
                     logger.warn(str(e))
 
@@ -344,13 +344,11 @@ class AIBot(object):
 
                     self._clear_cache(message.chat.id)
 
-                    try:
-                        if action is self.Action.TO_AI_NO_CACHE:
+                    if action is not self.Action.TO_AI_NO_CACHE:
+                        try:
                             self._rotate_cache(message.chat.id, text)
-                        else:
-                            self._rotate_cache(message.chat.id, message.text)
-                    except ValueError as e:
-                        logger.warn(str(e))
+                        except ValueError as e:
+                            logger.warn(str(e))
 
                     cache_was_cleared = True
                     failed = True
