@@ -297,7 +297,7 @@ class AIBot(object):
             if (
                 not message.msg_type == MessageType.FOR_AI.value
                 and message.chat.is_muc
-                and not message.text.startswith(settings.openai.user_nick)
+                and not message.text.strip().startswith(settings.openai.user_nick)
             ):
                 logger.info(
                     "Skip creating completion, because message doesn't starts with " + settings.openai.user_nick
