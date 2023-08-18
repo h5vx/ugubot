@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import typing as t
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import pytz
@@ -9,7 +10,6 @@ from pydantic import BaseModel
 from db import Chat, Message, NickColor, db_session, select
 from models import ChatModel, MessageModel
 from util.xmpp import create_message
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 outgoing_queue = asyncio.Queue()
@@ -72,11 +72,7 @@ class ChatMessagesHandler(WebSocketCommandHandler):
 
         with db_session:
             query = select(
-                m
-                for m in Message
-                if m.utctime >= start_date
-                and m.utctime < stop_date
-                and m.chat.id == chat_id
+                m for m in Message if m.utctime >= start_date and m.utctime < stop_date and m.chat.id == chat_id
             )
             return [MessageModel.from_orm(m).dict() for m in query]
 
@@ -100,11 +96,7 @@ class DatesHandler(WebSocketCommandHandler):
 
                 year, month, day = dt_loc.strftime("%Y,%b,%d").split(",")
 
-                days = (
-                    result.setdefault(int(chat_id), {})
-                    .setdefault(year, {})
-                    .setdefault(month, [])
-                )
+                days = result.setdefault(int(chat_id), {}).setdefault(year, {}).setdefault(month, [])
 
                 if day not in days:
                     days.append(day)
@@ -155,9 +147,7 @@ class SendMessageHandler(WebSocketCommandHandler):
         if for_ai:
             text = text[2:]
 
-        msg = OutgoingMessage(
-            jid=chat.jid, is_muc=chat.is_muc, text=text, for_ai=for_ai
-        )
+        msg = OutgoingMessage(jid=chat.jid, is_muc=chat.is_muc, text=text, for_ai=for_ai)
         # msg = create_message(chat.jid, text, chat.is_muc)
         outgoing_queue.put_nowait(msg)
         return "OK"

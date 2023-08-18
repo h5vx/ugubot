@@ -5,6 +5,14 @@ description = ""
 authors = ["h5vx <h5v@protonmail.com>"]
 readme = "README.md"
 
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+isort = "^5.12.0"
+
+[tool.black]
+line-length=120
+target-version = ['py39']
+
 [tool.poetry.dependencies]
 python = "^3.9"
 aioxmpp = "^0.13.3"

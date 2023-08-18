@@ -7,7 +7,8 @@ from uuid import UUID, uuid4
 
 import uvicorn
 from starlette.applications import Starlette
-from starlette.authentication import AuthCredentials, AuthenticationBackend, SimpleUser
+from starlette.authentication import (AuthCredentials, AuthenticationBackend,
+                                      SimpleUser)
 from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
@@ -131,9 +132,7 @@ async def ws(websocket: WebSocket):
             return
 
     sender_coroutine = sender()
-    await asyncio.wait(
-        (receiver(), sender_coroutine), return_when=asyncio.FIRST_COMPLETED
-    )
+    await asyncio.wait((receiver(), sender_coroutine), return_when=asyncio.FIRST_COMPLETED)
 
     sender_coroutine.throw(asyncio.CancelledError)
     sender_coroutine.close()
@@ -152,17 +151,14 @@ app = Starlette(
         Mount("/secured", SecuredStatic(directory="webui/secured")),
         WebSocketRoute("/ws", endpoint=ws),
     ],
-    middleware=[
-        Middleware(
-            AuthenticationMiddleware, backend=SignedCookieAuthenticationBackend()
-        )
-    ],
+    middleware=[Middleware(AuthenticationMiddleware, backend=SignedCookieAuthenticationBackend())],
 )
 
 
 @app.on_event("startup")
 def main():
     from bot import bot_task
+
     db.db_init()
 
     loop = asyncio.get_running_loop()

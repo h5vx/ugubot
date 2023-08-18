@@ -55,17 +55,13 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
         ai.incoming_queue.put_nowait(message_in_db)
 
     @bot.register_handler(Handler.MUC_MESSAGE)
-    def on_muc_message(
-        message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
-    ):
+    def on_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs):
         message = db.store_muc_message(message, member)
         send_message_to_ws_clients(ws_clients, message)
         ai.incoming_queue.put_nowait(message)
 
     @bot.register_handler(Handler.OUTGOING_MUC_MESSAGE)
-    def on_muc_outgoing(
-        message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
-    ):
+    def on_muc_outgoing(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs):
         message = db.store_muc_message(message, member, outgoing=True)
         send_message_to_ws_clients(ws_clients, message)
 
@@ -80,11 +76,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
         send_message_to_ws_clients(ws_clients, message)
 
     @bot.register_handler(Handler.MUC_USER_LEAVE)
-    def on_muc_leave(
-        occupant: aioxmpp.muc.Occupant,
-        muc_leave_mode: aioxmpp.muc.LeaveMode = None,
-        **kwargs
-    ):
+    def on_muc_leave(occupant: aioxmpp.muc.Occupant, muc_leave_mode: aioxmpp.muc.LeaveMode = None, **kwargs):
         message = db.store_muc_user_leave(occupant, muc_leave_mode)
         send_message_to_ws_clients(ws_clients, message)
 

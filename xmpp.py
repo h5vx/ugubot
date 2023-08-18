@@ -54,12 +54,8 @@ class XMPPClient:
 
         self.vcard = self.client.summon(vcard.VCardService)
 
-        self.client.stream.register_iq_request_handler(
-            aioxmpp.IQType.GET, Query, self.on_iq_version_query
-        )
-        self.client.stream.register_message_callback(
-            MessageType.CHAT, None, self.on_message
-        )
+        self.client.stream.register_iq_request_handler(aioxmpp.IQType.GET, Query, self.on_iq_version_query)
+        self.client.stream.register_message_callback(MessageType.CHAT, None, self.on_message)
 
         self.futures_queue = asyncio.Queue()
         self.running = False
@@ -107,9 +103,7 @@ class XMPPClient:
                 return room
 
     def register_handler(self, handler: Handler):
-        assert (
-            handler.value in self.handlers
-        ), f"register_handler: Unknown handler {handler}"
+        assert handler.value in self.handlers, f"register_handler: Unknown handler {handler}"
 
         def deco(func):
             self.handlers[handler.value].append(func)
@@ -137,9 +131,7 @@ class XMPPClient:
         for handler in self.handlers[Handler.MESSAGE.value]:
             handler(msg)
 
-    def on_muc_message(
-        self, message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs
-    ):
+    def on_muc_message(self, message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs):
         room = self.get_room_by_muc_jid(member.conversation_jid)
 
         if room and room.muc_state == aioxmpp.muc.RoomState.HISTORY:
@@ -163,9 +155,7 @@ class XMPPClient:
         for handler in self.handlers[Handler.MUC_MESSAGE.value]:
             handler(message, member, source, **kwargs)
 
-    def on_muc_enter(
-        self, presence: aioxmpp.Presence, occupant: aioxmpp.muc.Occupant, **kwargs
-    ):
+    def on_muc_enter(self, presence: aioxmpp.Presence, occupant: aioxmpp.muc.Occupant, **kwargs):
         logger.info(f"Joined room {presence.from_} {occupant.nick}")
 
         for handler in self.handlers[Handler.MUC_ENTER.value]:
@@ -191,9 +181,7 @@ class XMPPClient:
         for handler in self.handlers[Handler.MUC_USER_LEAVE.value]:
             handler(occupant, muc_leave_mode, **kwargs)
 
-    def on_muc_topic_changed(
-        self, member: aioxmpp.muc.ServiceMember, new_topic, *args, **kwargs
-    ):
+    def on_muc_topic_changed(self, member: aioxmpp.muc.ServiceMember, new_topic, *args, **kwargs):
         logger.info(f"Topic changed by {member.conversation_jid}\n{new_topic.any()}")
 
         for handler in self.handlers[Handler.MUC_TOPIC_CHANGED.value]:

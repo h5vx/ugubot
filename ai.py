@@ -1,16 +1,17 @@
 import logging
-from textwrap import shorten
 import typing as t
 from asyncio import Queue
 from dataclasses import dataclass
+from enum import Enum
+from textwrap import shorten
 
 import openai
-from enum import Enum
 
 from config import settings
-from db import Chat, Message, MessageType, db_session, get_last_n_messages_for_ai
-from util.token_counter import count_tokens_for_message, get_encoder_for_model
+from db import (Chat, Message, MessageType, db_session,
+                get_last_n_messages_for_ai)
 from util.plurals import pluralize
+from util.token_counter import count_tokens_for_message, get_encoder_for_model
 
 logger = logging.getLogger(__name__)
 

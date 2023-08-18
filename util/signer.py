@@ -2,6 +2,7 @@ import datetime
 import hmac
 import secrets
 
+
 class Signer:
     def __init__(self, key: str, expiration: str = None) -> None:
         self.key = key.encode("utf-8")
@@ -18,9 +19,7 @@ class Signer:
         if value is None:
             value = str(self.get_utcnow_timestamp())
 
-        signature = hmac.new(
-            self.key, msg=value.encode("utf-8"), digestmod="sha256"
-        ).hexdigest()
+        signature = hmac.new(self.key, msg=value.encode("utf-8"), digestmod="sha256").hexdigest()
         return ":".join((value, signature))
 
     def check_token(self, token: str) -> bool:
@@ -31,9 +30,7 @@ class Signer:
                 return False
 
             signature_encoded = signature.encode("utf-8")
-            _, expected_signature = (
-                self.get_signed_token(value).encode("utf-8").split(b":")
-            )
+            _, expected_signature = self.get_signed_token(value).encode("utf-8").split(b":")
 
             # Check the signature itself
             if not secrets.compare_digest(signature_encoded, expected_signature):

@@ -99,9 +99,7 @@ def store_message(message: aioxmpp.Message, outgoing=False):
 
 
 @db_session
-def store_muc_message(
-    message: aioxmpp.Message, member: aioxmpp.muc.Occupant, outgoing=False
-):
+def store_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, outgoing=False):
     logger.debug("Storing MUC message", message)
 
     now = datetime.utcnow()
@@ -165,9 +163,7 @@ def store_muc_user_join(occupant: aioxmpp.muc.Occupant):
 
 
 @db_session
-def store_muc_user_leave(
-    occupant: aioxmpp.muc.Occupant, muc_leave_mode: t.Optional[aioxmpp.muc.LeaveMode]
-):
+def store_muc_user_leave(occupant: aioxmpp.muc.Occupant, muc_leave_mode: t.Optional[aioxmpp.muc.LeaveMode]):
     now = datetime.utcnow()
     mucjid = str(occupant.conversation_jid.bare())
     text = None
@@ -233,8 +229,4 @@ def store_muc_privmsg(message: aioxmpp.Message, outgoing=False):
 def get_last_n_messages_for_ai(chat: Chat, n: int):
     types = MessageType.USER.value, MessageType.FOR_AI.value
 
-    return reversed(
-        chat.messages.select(lambda m: m.msg_type in types)
-        .order_by(desc(Message.utctime))
-        .limit(n)
-    )
+    return reversed(chat.messages.select(lambda m: m.msg_type in types).order_by(desc(Message.utctime)).limit(n))
