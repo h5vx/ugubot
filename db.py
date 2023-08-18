@@ -2,6 +2,7 @@ import logging
 import os
 import typing as t
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 
 import aioxmpp
@@ -43,6 +44,18 @@ class Message(db.Entity):
 class NickColor(db.Entity):
     nick = Required(str, unique=True)
     color = Required(str)
+
+
+class AIModel(db.Entity):
+    name = Required(str)
+
+
+class AIUsage(db.Entity):
+    message = Required(Message)
+    reply_for = Required(Message)
+    model = Required(AIModel)
+    tokens_spent = Optional(int)
+    money_spent = Optional(Decimal)
 
 
 def db_init():
