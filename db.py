@@ -29,6 +29,7 @@ class Chat(db.Entity):
     jid = Required(str, unique=True)
     name = Required(str)
     is_muc = Required(bool)
+
     messages = Set("Message")
 
 
@@ -40,6 +41,9 @@ class Message(db.Entity):
     text = Optional(str)
     outgoing = Required(bool)
 
+    ai_usage = Set("AIUsage", reverse="message")
+    user_usage = Set("AIUsage", reverse="reply_for")
+
 
 class NickColor(db.Entity):
     nick = Required(str, unique=True)
@@ -48,6 +52,8 @@ class NickColor(db.Entity):
 
 class AIModel(db.Entity):
     name = Required(str)
+
+    usages = Set("AIUsage")
 
 
 class AIUsage(db.Entity):
