@@ -63,7 +63,7 @@ class UsageCommandMiddleware(AIBotMiddleware):
 
             for i, col in enumerate(args):
                 row.append(col)
-                table_col_width[i] = max(table_col_width[i], len(col))
+                table_col_width[i] = max(table_col_width[i], len(str(col)))
 
             table.append(row)
 
