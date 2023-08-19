@@ -142,7 +142,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
 
             if msg.model:
                 db.store_ai_usage(
-                    db.Message[msg.reply_for],
+                    msg.reply_for,
                     message_in_db,
                     msg.model,
                     db.AIUsageInfo(

@@ -269,12 +269,12 @@ def store_muc_privmsg(message: aioxmpp.Message, outgoing=False):
 
 
 @db_session
-def store_ai_usage(prompt: Message, completion: Message, ai_model: str, usage_info: AIUsageInfo):
+def store_ai_usage(prompt_message_id: int, completion: Message, ai_model: str, usage_info: AIUsageInfo):
     ai_model = get_or_create_ai_model(model)
 
     ai_usage = AIUsage(
         model=ai_model,
-        prompt=prompt,
+        prompt=Message[prompt_message_id],
         completion=completion,
         completion_tokens=usage_info.reply_tokens,
         prompt_tokens=usage_info.prompt_tokens,

@@ -11,7 +11,7 @@ def get_encoder_for_model(model):
 
     if model == "gpt-4":
         return tiktoken.encoding_for_model("gpt-4-0314")
-    
+
     return tiktoken.encoding_for_model(model)
 
 
