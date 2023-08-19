@@ -36,6 +36,15 @@ class AIBot(object):
             if isinstance(mw, middleware.ContextWithPreludeMiddleware):
                 self._clear_context = mw.clear_context
                 break
+    
+    async def get_completion(self, messages, model):
+        result = await openai.ChatCompletion.acreate(
+            model=model,
+            max_tokens=settings.openai.tokens_reserved_for_response,
+            messages=messages,
+        )
+
+        return result
 
     async def run(self):
         while True:
@@ -62,7 +71,7 @@ class AIBot(object):
 
             while attempts > 0:
                 try:
-                    completion = await self.get_completion(message.full_with_context)
+                    completion = await self.get_completion(message.full_with_context, message.model)
                     failed = False
                     break
                 except Exception as e:
