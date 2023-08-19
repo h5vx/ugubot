@@ -99,7 +99,7 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
         if message.chat_id not in self._context:
             self._context[message.chat_id] = deque()
 
-        self._context.append(
+        self._context[message.chat_id].append(
             self.ContextItem(
                 model=message.model,
                 tokens=message_tokens,
