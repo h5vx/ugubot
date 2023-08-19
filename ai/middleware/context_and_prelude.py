@@ -150,7 +150,8 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
 
         def ctx_item_to_result_string(n: int, ctx_item: self.ContextItem):
             shortened_msg = shorten(ctx_item.message["content"], 30, placeholder="…")
-            result.append(f"{n}: {shortened_msg} ({ctx_item.tokens} tok)")
+            add_text = f" [{ctx_item.model}]" if ctx_item.model != self.default_model else ""
+            result.append(f"{n}: {shortened_msg} ({ctx_item.tokens} tok)" + add_text)
 
         if len(chat_context) > 6:
             for i in range(4):
