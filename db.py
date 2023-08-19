@@ -324,4 +324,4 @@ def get_usage_for_last_n_days(days: int, chat_id: int = None):
         for msg in messages
         for usage in AIUsage
         if usage.prompt == msg
-    ).get()
+    ).fetch()
