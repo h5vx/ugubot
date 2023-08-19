@@ -270,7 +270,7 @@ def store_muc_privmsg(message: aioxmpp.Message, outgoing=False):
 
 @db_session
 def store_ai_usage(prompt_message_id: int, completion: Message, ai_model: str, usage_info: AIUsageInfo):
-    ai_model = get_or_create_ai_model(model)
+    ai_model = get_or_create_ai_model(ai_model)
 
     ai_usage = AIUsage(
         model=ai_model,
