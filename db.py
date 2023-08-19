@@ -1,8 +1,8 @@
 import logging
 import os
 import typing as t
+from dataclasses import dataclass
 from datetime import datetime
-from decimal import Decimal
 from enum import Enum
 
 import aioxmpp
@@ -31,6 +31,7 @@ class Chat(db.Entity):
     is_muc = Required(bool)
 
     messages = Set("Message")
+    prelude = Set("AIPrelude")
 
 
 class Message(db.Entity):
@@ -41,8 +42,8 @@ class Message(db.Entity):
     text = Optional(str)
     outgoing = Required(bool)
 
-    ai_usage = Set("AIUsage", reverse="message")
-    user_usage = Set("AIUsage", reverse="reply_for")
+    ai_usage = Set("AIUsage", reverse="completion")
+    user_usage = Set("AIUsage", reverse="prompt")
 
 
 class NickColor(db.Entity):
@@ -51,17 +52,31 @@ class NickColor(db.Entity):
 
 
 class AIModel(db.Entity):
-    name = Required(str)
-
+    name = Required(str, unique=True)
     usages = Set("AIUsage")
 
 
+class AIPrelude(db.Entity):
+    chat = Required(Chat, unique=True)
+    prelude = Required(str)
+
+
 class AIUsage(db.Entity):
-    message = Required(Message)
-    reply_for = Required(Message)
     model = Required(AIModel)
-    tokens_spent = Optional(int)
-    money_spent = Optional(Decimal)
+
+    prompt = Required(Message)
+    completion = Required(Message)
+
+    completion_tokens = Optional(int)
+    prompt_tokens = Optional(int)
+    total_tokens = Optional(int)
+
+
+@dataclass
+class AIUsageInfo:
+    prompt_tokens: int
+    reply_tokens: int
+    total_tokens: int
 
 
 def db_init():
@@ -91,6 +106,15 @@ def get_or_create_chat(jid: str, name: str):
         chat = Chat(jid=jid, name=name, is_muc=False)
 
     return chat
+
+
+def get_or_create_ai_model(name: str):
+    ai_model = AIModel.select(name=name).first()
+
+    if ai_model is None:
+        ai_model = AIModel(name=name)
+
+    return ai_model
 
 
 @db_session
@@ -242,6 +266,24 @@ def store_muc_privmsg(message: aioxmpp.Message, outgoing=False):
     commit()
 
     return message
+
+
+@db_session
+def store_ai_usage(prompt: Message, completion: Message, ai_model: str, usage_info: AIUsageInfo):
+    ai_model = get_or_create_ai_model(model)
+
+    ai_usage = AIUsage(
+        model=ai_model,
+        prompt=prompt,
+        completion=completion,
+        completion_tokens=usage_info.reply_tokens,
+        prompt_tokens=usage_info.prompt_tokens,
+        total_tokens=usage_info.total_tokens,
+    )
+
+    commit()
+
+    return ai_usage
 
 
 @db_session

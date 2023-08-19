@@ -7,8 +7,7 @@ from uuid import UUID, uuid4
 
 import uvicorn
 from starlette.applications import Starlette
-from starlette.authentication import (AuthCredentials, AuthenticationBackend,
-                                      SimpleUser)
+from starlette.authentication import AuthCredentials, AuthenticationBackend, SimpleUser
 from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
