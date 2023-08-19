@@ -1,3 +1,5 @@
+import typing as t
+
 from ai.types import IncomingMessage, OutgoingMessage
 
 from ..types import IncomingMessage, OutgoingMessage
@@ -18,7 +20,7 @@ HELP = """Команды начинаются с символа ~. У бота �
 
 
 class HelpCommandHandlerMiddleware(AIBotMiddleware):
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if "help" in message.commands:
             return OutgoingMessage(
                 message.chat_id,

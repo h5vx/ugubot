@@ -46,7 +46,7 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
 
         self._load_context_from_db()
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if self.command_clear_context in message.commands:
             self._handle_command_clear_context(message)
         if self.command_change_prelude in message.commands:
@@ -66,11 +66,11 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
 
         return message
 
-    def outgoing(self, message: OutgoingMessage) -> OutgoingMessage | None:
+    def outgoing(self, message: OutgoingMessage) -> t.Optional[OutgoingMessage]:
         self._rotate_context(message)
         return message
 
-    def _rotate_context(self, message: IncomingMessage | OutgoingMessage) -> OutgoingMessage | None:
+    def _rotate_context(self, message: t.Union[IncomingMessage, OutgoingMessage]) -> t.Optional[OutgoingMessage]:
         """
         Put new item in context and remove oldest items if max tokens exceeded
         """

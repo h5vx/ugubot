@@ -1,4 +1,5 @@
 import logging
+import typing as t
 
 from config import settings
 
@@ -15,7 +16,7 @@ class CommandParserMiddleware(AIBotMiddleware):
 
     command_prefix = settings.openai.command_prefix
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         while message.text.startswith(self.command_prefix):
             command_and_text = message.text.split(" ", maxsplit=1)
 

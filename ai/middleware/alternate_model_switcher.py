@@ -1,3 +1,5 @@
+import typing as t
+
 from config import settings
 
 from ..types import IncomingMessage, OutgoingMessage
@@ -12,7 +14,7 @@ class AlternateModelSwitcherMiddleware(AIBotMiddleware):
     alternate_model = settings.openai.model_secondary
     switch_command = settings.openai.model_secondary_command
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if self.switch_command in message.commands:
             message.model = self.alternate_model
         return message

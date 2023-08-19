@@ -1,3 +1,5 @@
+import typing as t
+
 from config import settings
 
 from ..types import IncomingMessage, OutgoingMessage
@@ -9,7 +11,7 @@ class UserDefinedPromptMiddleware(AIBotMiddleware):
     Handles user defined prompts
     """
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if not "prompt" in settings.openai:
             return message
 

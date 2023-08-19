@@ -8,7 +8,7 @@ class AIBotMiddleware(object):
     Base middleware class for AIBot
     """
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         """
         This method should handle incoming message.
         It should return either:

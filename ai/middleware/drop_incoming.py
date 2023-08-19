@@ -1,4 +1,5 @@
 import logging
+import typing as t
 
 from config import settings
 
@@ -13,7 +14,7 @@ class DropIncomingIfAIDisabledMiddleware(AIBotMiddleware):
     Drop incoming message if AI is disabled
     """
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if not settings.openai.enabled:
             logger.info(f"{self.__class__.__name__}: Message dropped")
             return None
@@ -28,7 +29,7 @@ class DropIncomingIfNotAddressedMiddleware(AIBotMiddleware):
 
     bot_nick = settings.openai.user_nick
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if not message.text.startswith(self.bot_nick):
             logger.info(f"{self.__class__.__name__}: Message dropped")
             return None
