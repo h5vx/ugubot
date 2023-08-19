@@ -1,5 +1,5 @@
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from config import settings
 
@@ -17,9 +17,9 @@ class IncomingMessage:
     chat_id: int
     text: str
     sender_nick: str
-    commands: t.List[str] = []
+    commands: t.List[str] = field(default_factory=list)
 
-    full_with_context: t.List[t.Dict[str, str]] = []
+    full_with_context: t.List[t.Dict[str, str]] = field(default_factory=list)
     model: str = settings.openai.model
 
 
