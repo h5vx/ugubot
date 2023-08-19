@@ -30,7 +30,10 @@ class DropIncomingIfNotAddressedMiddleware(AIBotMiddleware):
     bot_nick = settings.openai.user_nick
 
     def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
-        if message.is_muc and not message.text.startswith(self.bot_nick):
+        if not message.is_muc:
+            return message
+
+        if not message.text.startswith(self.bot_nick):
             logger.info(f"{self.__class__.__name__}: Message dropped")
             return None
 
