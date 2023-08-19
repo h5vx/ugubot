@@ -11,12 +11,8 @@ def get_encoder_for_model(model):
 
     if model == "gpt-4":
         return tiktoken.encoding_for_model("gpt-4-0314")
-
-    raise NotImplementedError(
-        f"get_encoder_for_model() is not implemented for model {model}."
-        + " See https://github.com/openai/openai-python/blob/main/chatml.md"
-        + "for information on how messages are converted to tokens."
-    )
+    
+    return tiktoken.encoding_for_model(model)
 
 
 def count_tokens_for_message(encoder, messages):
