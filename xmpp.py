@@ -40,13 +40,13 @@ class XMPPClient:
         version_info: ClientVersion = None,
         auto_approve_subscribe: bool = False,
     ) -> None:
-        jid = aioxmpp.JID.fromstr(jid)
+        self.jid = aioxmpp.JID.fromstr(jid)
         password = password
 
         self.auto_approve_subscribe = auto_approve_subscribe
 
         self.client = aioxmpp.PresenceManagedClient(
-            jid, aioxmpp.make_security_layer(password, no_verify=not ssl_verify)
+            self.jid, aioxmpp.make_security_layer(password, no_verify=not ssl_verify)
         )
         self.version_info = version_info or ClientVersion(None, None, None)
         self.roster: aioxmpp.RosterClient = self._setup_roster_service()

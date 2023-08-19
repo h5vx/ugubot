@@ -49,7 +49,7 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
     def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if self.command_clear_context in message.commands:
             clear_result = self._handle_command_clear_context(message)
-            
+
             if isinstance(clear_result, OutgoingMessage):
                 return clear_result
 

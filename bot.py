@@ -102,7 +102,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
     async def webui_outgoing_messages_handler():
         while True:
             msg: OutgoingMessage = await outgoing_queue.get()
-            msg_xmpp = create_message(msg.jid, msg.text, msg.is_muc)
+            msg_xmpp = create_message(msg.jid, msg.text, msg.is_muc, bot.jid)
 
             if msg.for_ai:
                 message_in_db = db.store_message_for_ai(msg_xmpp, msg.is_muc)
@@ -115,9 +115,16 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
                         sender_nick=message_in_db.nick,
                     )
                 )
-                send_message_to_ws_clients(ws_clients, message_in_db)
-            else:
+            elif msg.is_muc:
+                barejid = msg_xmpp.to.bare()
+                room = bot.get_room_by_muc_jid(barejid)
+                message_in_db = db.store_muc_message(msg_xmpp, room.me, outgoing=True)
                 bot.send(msg_xmpp)
+            else:
+                message_in_db = db.store_message(msg_xmpp, outgoing=True)
+                bot.send(msg_xmpp)
+
+            send_message_to_ws_clients(ws_clients, message_in_db)
 
     ai = ai_bot.AIBot()
 
