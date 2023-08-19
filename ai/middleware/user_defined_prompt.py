@@ -15,7 +15,7 @@ class UserDefinedPromptMiddleware(AIBotMiddleware):
         if not "prompt" in settings.openai:
             return message
 
-        for _, prompt in settings.openai.prompt:
+        for _, prompt in settings.openai.prompt.items():
             if prompt.command in message.commands:
                 message.text = prompt.text + " " + message.text
 
