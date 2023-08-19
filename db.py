@@ -2,10 +2,11 @@ import logging
 import os
 import typing as t
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 
 import aioxmpp
+import pytz
 from pony.orm import *
 
 from config import settings
@@ -298,3 +299,17 @@ def get_last_n_messages_for_ai(chat: Chat, n: int):
     types = MessageType.USER.value, MessageType.FOR_AI.value
 
     return reversed(chat.messages.select(lambda m: m.msg_type in types).order_by(desc(Message.utctime)).limit(n))
+
+
+@db_session
+def get_usage_for_last_n_days(days: int, chat_id: int = None):
+    start_date = datetime.now() - timedelta(days=days)
+    start_date = start_date.astimezone(pytz.utc)
+
+    chat = Chat.select(id=chat_id).get() if chat_id else None
+
+    types = MessageType.USER.value, MessageType.FOR_AI.value
+    messages = chat.messages if chat else Message
+    messages = messages.select(lambda m: m.msg_type in types and m.utctime >= start_date)
+
+    return select((msg, usage) for msg in messages for usage in AIUsage if usage.prompt == msg)

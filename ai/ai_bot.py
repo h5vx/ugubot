@@ -21,6 +21,8 @@ class AIBot(object):
         middleware.DropIncomingIfNotAddressedMiddleware,
         middleware.CommandParserMiddleware,
         middleware.AlternateModelSwitcherMiddleware,
+        middleware.UsageCommandMiddleware,
+        middleware.UsageInlineCommandMiddleware,
         middleware.HelpCommandHandlerMiddleware,
         middleware.UserDefinedPromptMiddleware,
         middleware.ContextWithPreludeMiddleware,
@@ -96,6 +98,7 @@ class AIBot(object):
                     reply_for=message.database_id,
                     text=outgoing_text,
                     model=completion.model,
+                    commands=message.commands,
                     usage=AIUsageInfo(
                         prompt_tokens=completion.usage.prompt_tokens,
                         reply_tokens=completion.usage.completion_tokens,

@@ -30,4 +30,5 @@ class OutgoingMessage:
     reply_for: int  # Database ID of incoming message for which this reply
     text: str
     model: t.Optional[str] = None
+    commands: t.Optional[t.List[str]] = field(default_factory=list)
     usage: t.Optional[AIUsageInfo] = None

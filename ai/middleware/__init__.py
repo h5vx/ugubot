@@ -4,6 +4,7 @@ from .context_and_prelude import ContextWithPreludeMiddleware
 from .drop_incoming import DropIncomingIfAIDisabledMiddleware, DropIncomingIfNotAddressedMiddleware
 from .help_command import HelpCommandHandlerMiddleware
 from .strip_message import StripMessageTextMiddleware
+from .usage_command import UsageCommandMiddleware, UsageInlineCommandMiddleware
 from .user_defined_prompt import UserDefinedPromptMiddleware
 
 __all__ = (
@@ -15,4 +16,6 @@ __all__ = (
     StripMessageTextMiddleware,
     UserDefinedPromptMiddleware,
     HelpCommandHandlerMiddleware,
+    UsageCommandMiddleware,
+    UsageInlineCommandMiddleware,
 )
