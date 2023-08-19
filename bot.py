@@ -53,13 +53,13 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
             message_in_db = db.store_message(message)
 
         send_message_to_ws_clients(ws_clients, message_in_db)
-        ai.incoming_queue.put_nowait(message_in_db)
+        ai_bot.incoming_queue.put_nowait(message_in_db)
 
     @bot.register_handler(Handler.MUC_MESSAGE)
     def on_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs):
         message = db.store_muc_message(message, member)
         send_message_to_ws_clients(ws_clients, message)
-        ai.incoming_queue.put_nowait(message)
+        ai_bot.incoming_queue.put_nowait(message)
 
     @bot.register_handler(Handler.MUC_USER_JOIN)
     def on_muc_user_join(member: aioxmpp.muc.Occupant, **kwargs):
@@ -95,7 +95,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
                     text=message_in_db.text,
                     sender_nick=message_in_db.nick,
                 )
-                ai.incoming_queue.put_nowait(ai_message)
+                ai_bot.incoming_queue.put_nowait(ai_message)
                 send_message_to_ws_clients(ws_clients, message_in_db)
             else:
                 bot.send(msg_xmpp)
