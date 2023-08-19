@@ -131,14 +131,14 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
             msg_xmpp = create_message(chat.jid, msg.text, chat.is_muc)
             bot.send(msg_xmpp)
 
-            send_message_to_ws_clients(ws_clients, message_in_db)
-
             if chat.is_muc:
                 barejid = msg_xmpp.from_.bare()
                 room = bot.get_room_by_muc_jid(barejid)
                 message_in_db = db.store_muc_message(msg_xmpp, room.me, outgoing=True)
             else:
                 message_in_db = db.store_message(msg_xmpp, outgoing=True)
+
+            send_message_to_ws_clients(ws_clients, message_in_db)
 
             if msg.model:
                 db.store_ai_usage(
