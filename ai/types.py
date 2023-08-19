@@ -15,6 +15,7 @@ class AIUsageInfo:
 class IncomingMessage:
     database_id: int
     chat_id: int
+    is_muc: bool
     text: str
     sender_nick: str
     commands: t.List[str] = field(default_factory=list)

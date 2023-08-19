@@ -57,6 +57,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
         ai_bot.incoming_queue.put_nowait(
             ai_types.IncomingMessage(
                 database_id=message_in_db.id,
+                is_muc=False,
                 chat_id=message_in_db.chat.id,
                 text=message_in_db.text,
                 sender_nick=message_in_db.nick,
@@ -70,6 +71,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
         ai_bot.incoming_queue.put_nowait(
             ai_types.IncomingMessage(
                 database_id=message.id,
+                is_muc=True,
                 chat_id=message.chat.id,
                 text=message.text,
                 sender_nick=message.nick,
@@ -107,6 +109,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
                 ai_bot.incoming_queue.put_nowait(
                     ai_types.IncomingMessage(
                         database_id=message_in_db.id,
+                        is_muc=message_in_db.chat.is_muc,
                         chat_id=message_in_db.chat.id,
                         text=message_in_db.text,
                         sender_nick=message_in_db.nick,
