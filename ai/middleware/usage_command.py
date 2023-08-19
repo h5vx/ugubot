@@ -38,7 +38,7 @@ class UsageStats:
         self.gpt35_input_money = self.gpt35_input / 1000 * GPT_3_5_PRICE_PER_1K_INPUT_TOKENS
         self.gpt35_output_money = self.gpt35_output / 1000 * GPT_3_5_PRICE_PER_1K_OUTPUT_TOKENS
         self.total_money = sum(
-            self.gpt4_input_money, self.gpt4_output_money, self.gpt35_input_money, self.gpt35_output_money
+            (self.gpt4_input_money, self.gpt4_output_money, self.gpt35_input_money, self.gpt35_output_money)
         )
 
 
