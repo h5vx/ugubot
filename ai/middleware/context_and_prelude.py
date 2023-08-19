@@ -48,7 +48,11 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
 
     def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if self.command_clear_context in message.commands:
-            self._handle_command_clear_context(message)
+            clear_result = self._handle_command_clear_context(message)
+            
+            if isinstance(clear_result, OutgoingMessage):
+                return clear_result
+
         if self.command_change_prelude in message.commands:
             return self._handle_command_prelude(message)
         if self.command_show_context in message.commands:
@@ -183,8 +187,16 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
         self._context[chat_id] = deque()
         self._context_tokens[chat_id] = 0
 
-    def _handle_command_clear_context(self, message: IncomingMessage) -> IncomingMessage:
+    def _handle_command_clear_context(self, message: IncomingMessage) -> t.Union[IncomingMessage, OutgoingMessage]:
         self.clear_context(message.chat_id)
+
+        if not message.text.strip():
+            return OutgoingMessage(
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text="Контекст очищен",
+            )
+
         return message
 
     def _get_encoder(self, model_name: str):
