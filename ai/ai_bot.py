@@ -36,7 +36,7 @@ class AIBot(object):
             if isinstance(mw, middleware.ContextWithPreludeMiddleware):
                 self._clear_context = mw.clear_context
                 break
-    
+
     async def get_completion(self, messages, model):
         result = await openai.ChatCompletion.acreate(
             model=model,
