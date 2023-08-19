@@ -53,13 +53,28 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
             message_in_db = db.store_message(message)
 
         send_message_to_ws_clients(ws_clients, message_in_db)
-        ai_bot.incoming_queue.put_nowait(message_in_db)
+
+        ai_bot.incoming_queue.put_nowait(
+            ai_types.IncomingMessage(
+                database_id=message_in_db.id,
+                chat_id=message_in_db.chat.id,
+                text=message_in_db.text,
+                sender_nick=message_in_db.nick,
+            )
+        )
 
     @bot.register_handler(Handler.MUC_MESSAGE)
     def on_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, source, **kwargs):
         message = db.store_muc_message(message, member)
         send_message_to_ws_clients(ws_clients, message)
-        ai_bot.incoming_queue.put_nowait(message)
+        ai_bot.incoming_queue.put_nowait(
+            ai_types.IncomingMessage(
+                database_id=message.id,
+                chat_id=message.chat.id,
+                text=message.text,
+                sender_nick=message.nick,
+            )
+        )
 
     @bot.register_handler(Handler.MUC_USER_JOIN)
     def on_muc_user_join(member: aioxmpp.muc.Occupant, **kwargs):
@@ -89,13 +104,14 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
 
             if msg.for_ai:
                 message_in_db = db.store_message_for_ai(msg_xmpp, msg.is_muc)
-                ai_message = ai_types.IncomingMessage(
-                    database_id=message_in_db.id,
-                    chat_id=message_in_db.chat.id,
-                    text=message_in_db.text,
-                    sender_nick=message_in_db.nick,
+                ai_bot.incoming_queue.put_nowait(
+                    ai_types.IncomingMessage(
+                        database_id=message_in_db.id,
+                        chat_id=message_in_db.chat.id,
+                        text=message_in_db.text,
+                        sender_nick=message_in_db.nick,
+                    )
                 )
-                ai_bot.incoming_queue.put_nowait(ai_message)
                 send_message_to_ws_clients(ws_clients, message_in_db)
             else:
                 bot.send(msg_xmpp)
