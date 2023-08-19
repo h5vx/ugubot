@@ -149,13 +149,13 @@ class ContextWithPreludeMiddleware(AIBotMiddleware):
             result.append(f"{n}: {shortened_msg} ({ctx_item.tokens} tok)")
 
         if len(chat_context) > 6:
-            for n, ctx_item in enumerate(chat_context[:3], 1):
-                ctx_item_to_result_string(n, ctx_item)
+            for i in range(4):
+                ctx_item_to_result_string(i + 1, chat_context[i])
 
             result.append(f"< ... {len(chat_context)- 6} пропущено ... >")
 
-            for n, ctx_item in enumerate(chat_context[-3:], len(chat_context) - 2):
-                ctx_item_to_result_string(n, ctx_item)
+            for i in range(-3, 0):
+                ctx_item_to_result_string(len(chat_context) + 1 + i, chat_context[i])
         else:
             for n, ctx_item in enumerate(chat_context, 1):
                 ctx_item_to_result_string(n, ctx_item)
