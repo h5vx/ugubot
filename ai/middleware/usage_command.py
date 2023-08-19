@@ -70,7 +70,7 @@ class UsageCommandMiddleware(AIBotMiddleware):
         def result_hline():
             result.append(":".join(("-" * min(30, table_col_width[i]) for i in range(len(table_col_width)))))
 
-        days_plural = pluralize(n_days, ("день", "дней", "дня"))
+        days_plural = pluralize(n_days, "день", "дней", "дня")
         days_text = "сегодня" if n_days == 1 else f"последние {n_days} {days_plural}"
 
         if global_:
