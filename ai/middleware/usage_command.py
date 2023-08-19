@@ -148,7 +148,7 @@ class UsageCommandMiddleware(AIBotMiddleware):
             if row[0] == "-":  # Line before total
                 result_hline()
 
-            row = (shorten(row[i], 30, placeholder="…").ljust(min(30, table_col_width[i])) for i in range(len(row)))
+            row = [shorten(row[i], 30, placeholder="…").ljust(min(30, table_col_width[i])) for i in range(len(row))]
             result.append(" : ".join(row))
 
         return "\n".join(result)
