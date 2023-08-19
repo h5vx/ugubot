@@ -132,7 +132,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
             bot.send(msg_xmpp)
 
             if chat.is_muc:
-                barejid = msg_xmpp.from_.bare()
+                barejid = msg_xmpp.to.bare()
                 room = bot.get_room_by_muc_jid(barejid)
                 message_in_db = db.store_muc_message(msg_xmpp, room.me, outgoing=True)
             else:
