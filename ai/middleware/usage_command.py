@@ -63,7 +63,7 @@ class UsageCommandMiddleware(AIBotMiddleware):
 
             for i, col in enumerate(args):
                 row.append(col)
-                table_col_width[i] = max(table_col_width[i], len(str(col)))
+                table_col_width[i] = max(table_col_width[i], len(col))
 
             table.append(row)
 
@@ -125,7 +125,7 @@ class UsageCommandMiddleware(AIBotMiddleware):
                 ),
             )
 
-            row_output(n, user_or_chat, total, g4i, g4o, g3i, g3o)
+            row_output(str(n), user_or_chat, total, g4i, g4o, g3i, g3o)
 
         # Append total
         total_usage.convert_tokens_to_money()
