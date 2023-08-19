@@ -81,24 +81,24 @@ class UsageCommandMiddleware(AIBotMiddleware):
             row_output("#", "User", "Total", "4 in", "4 out", "3.5 in", "3.5 out")
 
         # Count in tokens
-        for msg, usage in get_usage_for_last_n_days(n_days):
+        for chat_name, nick, model, tok_compl, tok_prompt, tok_total in get_usage_for_last_n_days(n_days):
             if global_:
-                stat = chat_usage[msg.chat.name]
+                stat = chat_usage[chat_name]
             else:
-                stat = user_usage[msg.nick]
+                stat = user_usage[nick]
 
-            if usage.model.startswith("gpt-3.5"):
-                stat.gpt35_input += usage.prompt_tokens
-                stat.gpt35_output += usage.completion_tokens
-                total_usage.gpt35_input += usage.prompt_tokens
-                total_usage.gpt35_output += usage.completion_tokens
-            elif usage.model.startswith("gpt-4"):
-                stat.gpt4_input += usage.prompt_tokens
-                stat.gpt4_output += usage.completion_tokens
-                total_usage.gpt4_input += usage.prompt_tokens
-                total_usage.gpt4_output += usage.completion_tokens
+            if model.startswith("gpt-3.5"):
+                stat.gpt35_input += tok_prompt
+                stat.gpt35_output += tok_compl
+                total_usage.gpt35_input += tok_prompt
+                total_usage.gpt35_output += tok_compl
+            elif model.startswith("gpt-4"):
+                stat.gpt4_input += tok_prompt
+                stat.gpt4_output += tok_compl
+                total_usage.gpt4_input += tok_prompt
+                total_usage.gpt4_output += tok_compl
 
-            stat.total += usage.prompt_tokens + usage.completion_tokens
+            stat.total += tok_prompt + tok_compl
             total_usage.total += stat.total
 
         # Count in money

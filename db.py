@@ -312,4 +312,16 @@ def get_usage_for_last_n_days(days: int, chat_id: int = None):
     messages = chat.messages if chat else Message
     messages = messages.select(lambda m: m.msg_type in types and m.utctime >= start_date)
 
-    return select((msg, usage) for msg in messages for usage in AIUsage if usage.prompt == msg)
+    return select(
+        (
+            msg.chat.name,
+            msg.nick,
+            usage.model.name,
+            usage.completion_tokens,
+            usage.prompt_tokens,
+            usage.total_tokens,
+        )
+        for msg in messages
+        for usage in AIUsage
+        if usage.prompt == msg
+    )
