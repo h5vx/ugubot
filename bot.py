@@ -143,7 +143,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
             if msg.model:
                 db.store_ai_usage(
                     msg.reply_for,
-                    message_in_db,
+                    message_in_db.id,
                     msg.model,
                     db.AIUsageInfo(
                         prompt_tokens=msg.usage.prompt_tokens,
