@@ -78,10 +78,7 @@ class AIBot(object):
                     break
                 except Exception as e:
                     logger.exception(e)
-                    logger.info(f"Tokens cache was: {self.messages_cache_tokens}")
-
                     self._clear_context(message.chat_id)
-
                     context_was_cleared = True
                     failed = True
                     attempts -= 1
