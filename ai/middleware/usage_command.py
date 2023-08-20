@@ -143,13 +143,19 @@ class UsageCommandMiddleware(AIBotMiddleware):
         row_output("-", "TOTAL", total, g4i, g4o, g3i, g3o)
 
         # Format the table
-        result_hline()  # Line after header
         for row in table:
-            if row[0] == "-":  # Line before total
+            first_col = row[0]
+
+            if first_col == "-":  # Line before total
                 result_hline()
 
             row = [shorten(row[i], 30, placeholder="…").ljust(min(30, table_col_width[i])) for i in range(len(row))]
             result.append(" : ".join(row))
+
+            if first_col == "#":  # Line after header
+                result_hline()
+
+
 
         return "\n".join(result)
 
