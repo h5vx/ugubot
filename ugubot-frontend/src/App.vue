@@ -1,18 +1,8 @@
 <template>
-  <div v-if="!connected" class="w3-container w3-center w3-animate-opacity">
-    <h1 class="fg-primary w3-animate-fading">Connecting...</h1>
-
-    <div id="logs" class="w3-container bg-dark fg-white w3-card-2">
-      <p v-for="log in startupScreenLogs" class="log-entry" :style="{ color: log.color }">
-        {{ log.text }}
-      </p>
-    </div>
-  </div>
-
-  <TheChatListSidebar v-if="connected" ref="sidebar" :chats="chats" :active-chat-id="activeChatId"
+  <TheChatListSidebar v-if="init" ref="sidebar" :chats="chats" :active-chat-id="activeChatId"
     :unread-ids="chatIdsWithUnreadBadges" @chatSelected="onChatSelected" />
 
-  <main id="main" v-if="connected" style="margin-left: 286px; transition: none;">
+  <main id="main" v-if="init" style="margin-left: 286px; transition: none;">
     <TheHeader :text="activeChat.jid" @menuClick="onMenuClick" />
     <TheDatePicker :dates="activeChatDates" :current-date="getCurrentDate()" @date-selected="onDateSelected" />
 
@@ -29,6 +19,15 @@
     <TheChatBox :messages="chatMessages" :tz="tz" @nick-click="openColorPicker" />
     <TheInputPrompt v-show="selectedDateIsToday" @message="sendMessage" />
   </main>
+  <div v-if="!connected" class="w3-container w3-center w3-animate-opacity log-container">
+    <h3 class="fg-primary w3-animate-fading">Connecting...</h3>
+
+    <div id="logs" class="w3-container bg-dark fg-white w3-card-2">
+      <p v-for="log in startupScreenLogs" class="log-entry" :style="{ color: log.color }">
+        {{ log.text }}
+      </p>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -55,7 +54,7 @@ function setNickColor(nick, color) {
     return
   }
 
-  const replace_pattern = /(\,|\(|\))/g // FIXME: PLEASE DO NOT USE NICKNAMES AS IS IN CLASSES, USE UNIQUE IDs FOR THIS
+  const replace_pattern = /(\,|\(|\))/g
   nick = nick.replaceAll(new RegExp(replace_pattern),"_")
   let selector = `.message-nick-${nick}`
   let rule = `color: ${color};`
@@ -79,6 +78,7 @@ export default {
       ws: null,
       tz: moment.tz.guess(),
       selectedDate: null,
+      init: false,
       connected: false,
       activeChatId: 0,
       startupScreenLogs: [],
@@ -102,34 +102,42 @@ export default {
   },
   methods: {
     onChatSelected(chatId) {
-      // Request chat dates if selected chat dates doesn't present
-      if (!(chatId in this.chatDates)) {
-        this.ws.send(JSON.stringify({
-          command: "get_dates",
-          client_timezone: this.tz
-        }))
+      if (!this.connected) {
+        this.cPickerOpened = false
+        this.addLog(`Unavailable`, "red");
+      } else {
+        // Request chat dates if selected chat dates doesn't present
+        if (!(chatId in this.chatDates)) {
+          this.ws.send(JSON.stringify({
+            command: "get_dates",
+            client_timezone: this.tz
+          }))
+        }
+        this.cPickerOpened = false
+        this.activeChatId = chatId
+        this.chatIdsWithUnreadBadges.delete(chatId)
       }
-      this.cPickerOpened = false
-      this.activeChatId = chatId
-      this.chatIdsWithUnreadBadges.delete(chatId)
     },
     onDateSelected(date) {
-      this.cPickerOpened = false
-      this.selectedDate = date
-      this.ws.send(JSON.stringify({
-        command: "get_messages",
-        date: date.format("YYYY/MM/DD"),
-        chat_id: this.activeChatId,
-        client_timezone: this.tz
-      }))
-
-      if (this.chatIdsWithUnreadBadges.has(this.activeChatId)) {
-        const today = moment().format("YYYY/MMM/DD")
-        if (date.format("YYYY/MMM/DD") === today) {
-          this.chatIdsWithUnreadBadges.delete(this.activeChatId)
+      if (!this.connected) {
+        this.cPickerOpened = false
+        this.addLog(`Unavailable`, "red");
+      } else {
+        this.cPickerOpened = false
+        this.selectedDate = date
+        this.ws.send(JSON.stringify({
+          command: "get_messages",
+          date: date.format("YYYY/MM/DD"),
+          chat_id: this.activeChatId,
+          client_timezone: this.tz
+        }))
+        if (this.chatIdsWithUnreadBadges.has(this.activeChatId)) {
+          const today = moment().format("YYYY/MMM/DD")
+          if (date.format("YYYY/MMM/DD") === today) {
+            this.chatIdsWithUnreadBadges.delete(this.activeChatId)
+          }
         }
       }
-
       this.updateSelectedDateIsToday()
     },
     onMenuClick() {
@@ -140,6 +148,7 @@ export default {
       this.addLog("Receiving chats")
       this.updateChats()
       this.updateNickColors()
+      this.init = true
       this.connected = true
     },
     onWebSocketDisconnected(e) {
@@ -255,7 +264,8 @@ export default {
       }))
     },
     addLog(text, color = '#eee') {
-      this.startupScreenLogs.push({ text: text, color: color })
+      this.startupScreenLogs = [{ text: text, color: color }]
+      //this.startupScreenLogs.push({ text: text, color: color })
     },
     getCookie(name) {
       const value = `; ${document.cookie}`;
@@ -344,14 +354,25 @@ export default {
   }
 }
 
+
+.log-container {
+  position: sticky;
+  width: 100%;
+  bottom: 0;
+  height: 140px;
+  background: #000;
+  z-index: 10;
+}
+
 #logs {
-  width: 80%;
+  /*width: 80%;
   margin: auto;
   max-width: 800px;
   max-height: 80vh;
   overflow: auto;
   min-height: 200px;
-  padding-top: 8px;
+  padding-top: 8px;*/
+  padding: 20px;
 }
 
 .log-entry {
