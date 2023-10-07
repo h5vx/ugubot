@@ -1,9 +1,9 @@
 <template>
-    <div ref="container" class="w3-bottom w3-card-2">
+    <div ref="container" class="textbox w3-card-2">
         <textarea v-model="input" ref="input" rows="1" type="text" spellcheck="false" class="w3-input fg-white"
             name="message" placeholder="Write a message…" id="message-input" @input="onInput"
             @keydown.enter.shift.exact.prevent="addNewLine" @keydown.enter.exact.prevent="sendMessage"></textarea>
-        <button v-if="input.length > 0" class="w3-button w3-right w3-hover-none fg-primary-light fg-hover-white"
+        <button v-if="input.length > 0" class="send-button w3-button w3-right w3-hover-none fg-primary-light fg-hover-white"
             @click="sendMessage">
             <FontAwesomeIcon id="send-icon" icon="fa-solid fa-angles-right"></FontAwesomeIcon>
         </button>
@@ -17,8 +17,6 @@ import { faAnglesRight } from '@fortawesome/free-solid-svg-icons'
 
 library.add(faAnglesRight)
 
-let mainResizeObserver, messageBoxResizeObserver
-
 export default {
     components: { FontAwesomeIcon },
     emits: ["message"],
@@ -28,42 +26,8 @@ export default {
         }
     },
     mounted() {
-        const main = document.getElementById("main")
-        const resizeInput = () => {
-            if (!this.$refs.container) return
-            this.$refs.input.style.width = (main.clientWidth - 100) + "px"
-            this.$refs.container.style.width = main.clientWidth + "px"
-        }
-
-        const resizeMessageBox = () => {
-            const mb = document.getElementById("message-box")
-            if (!mb) return
-
-            let e = document.scrollingElement
-            mb.style.marginBottom = this.$refs.container.clientHeight + "px"
-
-            if ((e.scrollHeight - e.clientHeight - e.scrollTop) < 40) {
-                window.scrollTo({
-                    top: e.scrollHeight,
-                    behavior: "auto",
-                })
-            }
-        }
-
-        resizeInput()
-        resizeMessageBox()
-
-        mainResizeObserver = new ResizeObserver(resizeInput).observe(main)
-        messageBoxResizeObserver = new ResizeObserver(resizeMessageBox).observe(this.$refs.container)
     },
     beforeUnmount() {
-        const mb = document.getElementById("message-box")
-        if (!mb) return
-
-        mb.style.marginBottom = null
-
-        if (mainResizeObserver) mainResizeObserver.unobserve()
-        if (messageBoxResizeObserver) messageBoxResizeObserver.unobserve()
     },
     methods: {
         onInput(e) {
@@ -84,12 +48,17 @@ export default {
 </script>
 
 <style scoped>
+.textbox {
+    position: sticky;
+    display: flex;
+    bottom: 0;
+}
 textarea {
+    flex: 1 1 auto;
     max-height: 84px;
     outline: none;
     resize: none;
     background-color: #222941;
-    float: left;
     padding-right: 0px;
     border-bottom: none;
 }
@@ -98,7 +67,10 @@ div {
     background-color: #222941;
     border-top: 1px solid #2f3a5e;
 }
-
+.send-button {
+    flex: 0 1 auto;
+    align-self: flex-start;
+}
 #send-icon {
     font-size: 1.5em;
     margin-bottom: -4px;
