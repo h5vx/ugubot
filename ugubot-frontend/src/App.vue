@@ -55,6 +55,8 @@ function setNickColor(nick, color) {
     return
   }
 
+  const replace_pattern = /(\,|\(|\))/g // FIXME: PLEASE DO NOT USE NICKNAMES AS IS IN CLASSES, USE UNIQUE IDs FOR THIS
+  nick = nick.replaceAll(new RegExp(replace_pattern),"_")
   let selector = `.message-nick-${nick}`
   let rule = `color: ${color};`
   let styleId = nickColorsStyleSheet.insertRule(`${selector} { ${rule} }`, nickColorsStyleSheet.rules.length)
