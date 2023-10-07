@@ -148,6 +148,7 @@ export default {
 .message-text {
     display: inline-block;
     white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .message-link {
