@@ -106,6 +106,7 @@ export default {
         this.cPickerOpened = false
         this.addLog(`Unavailable`, "red");
       } else {
+        localStorage.setItem("last_selected_chat_id", chatId)
         // Request chat dates if selected chat dates doesn't present
         if (!(chatId in this.chatDates)) {
           this.ws.send(JSON.stringify({
@@ -150,6 +151,7 @@ export default {
       this.updateNickColors()
       this.init = true
       this.connected = true
+      this.onChatSelected(Number.parseInt(localStorage.getItem("last_selected_chat_id"), 10))
     },
     onWebSocketDisconnected(e) {
       this.addLog("Connection lost", "red")
