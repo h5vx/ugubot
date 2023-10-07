@@ -153,6 +153,7 @@ export default {
 .message-link {
     text-decoration: none;
     color: #5371d5;
+    word-break: break-all;
 }
 
 .message-link:hover {
