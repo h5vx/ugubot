@@ -34,10 +34,9 @@ class Chat(db.Entity):
     messages = Set("Message")
     prelude = Set("AIPrelude")
 
-
 class Message(db.Entity):
     chat = Required(Chat)
-    utctime = Required(datetime)
+    utctime = Required(datetime, index=True)
     msg_type = Required(int)
     nick = Required(str)
     text = Optional(str)
@@ -46,21 +45,17 @@ class Message(db.Entity):
     ai_usage = Set("AIUsage", reverse="completion")
     user_usage = Set("AIUsage", reverse="prompt")
 
-
 class NickColor(db.Entity):
     nick = Required(str, unique=True)
     color = Required(str)
-
 
 class AIModel(db.Entity):
     name = Required(str, unique=True)
     usages = Set("AIUsage")
 
-
 class AIPrelude(db.Entity):
     chat = Required(Chat, unique=True)
     prelude = Required(str)
-
 
 class AIUsage(db.Entity):
     model = Required(AIModel)
@@ -72,6 +67,12 @@ class AIUsage(db.Entity):
     prompt_tokens = Optional(int)
     total_tokens = Optional(int)
 
+class ChatDate(db.Entity):
+    chat = Required(int)
+    utctime = Required(datetime)
+
+class ChatDateInfo:
+    last_day = 0
 
 @dataclass
 class AIUsageInfo:
@@ -148,6 +149,17 @@ def store_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, ou
 
     now = datetime.utcnow()
     mucjid = str(member.conversation_jid.bare())
+
+    msg_day = now.strftime("%d")
+
+    if (ChatDateInfo.last_day == 0):
+        ChatDateInfo.last_day = Message.select_by_sql("SELECT utctime from Message order by ROWID DESC limit 1").strftime("%d")
+
+    if (ChatDateInfo.last_day != msg_day):
+        chatdate = ChatDate(
+            chat=get_or_create_muc_chat(mucjid),
+            utctime=now,
+        )
 
     message = Message(
         chat=get_or_create_muc_chat(mucjid),

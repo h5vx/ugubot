@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import pytz
 from pydantic import BaseModel
 
-from db import Chat, Message, NickColor, db_session, select
+from db import Chat, Message, NickColor, ChatDate, db_session, select
 from models import ChatModel, MessageModel
 from util.xmpp import create_message
 
@@ -88,8 +88,8 @@ class DatesHandler(WebSocketCommandHandler):
         result = {}
 
         with db_session:
-            all_dates = select((m.chat.id, m.utctime) for m in Message)
-
+            #all_dates = select((m.chat.id, m.utctime) for m in Message)
+            all_dates = select((m.chat, m.utctime) for m in ChatDate)
             for chat_id, date in all_dates:
                 dt_utc = pytz.utc.normalize(pytz.utc.localize(date))
                 dt_loc = dt_utc.astimezone(tz)
