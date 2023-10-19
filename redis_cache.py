@@ -42,7 +42,7 @@ class cache:
         return pickle.loads(value)
 
     @staticmethod
-    def scan_keys(match: str) -> t.Generator[str]:
+    def scan_keys(match: str) -> t.Generator[str, None, None]:
         for key in r.scan_iter(match):
             yield key.decode("ascii")
 
