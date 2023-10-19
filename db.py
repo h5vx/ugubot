@@ -37,7 +37,7 @@ class Chat(db.Entity):
 
 class Message(db.Entity):
     chat = Required(Chat)
-    utctime = Required(datetime)
+    utctime = Required(datetime, index=True)
     msg_type = Required(int)
     nick = Required(str)
     text = Optional(str)

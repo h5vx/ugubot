@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from db import Chat, Message, NickColor, db_session, select
 from models import ChatModel, MessageModel
-from util.xmpp import create_message
+from redis_cache import cache
 
 logger = logging.getLogger(__name__)
 outgoing_queue = asyncio.Queue()
@@ -85,23 +85,79 @@ class DatesHandler(WebSocketCommandHandler):
 
     def handle(self, client_timezone: str) -> dict:
         tz = pytz.timezone(client_timezone)
+
+        if not cache.available:
+            return self.get_all_dates_from_db(tz)
+
+        return self.get_all_dates_from_cache(tz)
+
+    @db_session
+    def get_all_dates_from_db(self, timezone: pytz.BaseTzInfo) -> dict:
+        result = {}
+        all_dates = select((m.chat.id, m.utctime) for m in Message)
+
+        for chat_id, date in all_dates:
+            dt_utc = pytz.utc.normalize(pytz.utc.localize(date))
+            dt_loc = dt_utc.astimezone(timezone)
+
+            year, month, day = dt_loc.strftime("%Y,%b,%d").split(",")
+
+            days = result.setdefault(int(chat_id), {}).setdefault(year, {}).setdefault(month, [])
+
+            if day not in days:
+                days.append(day)
+
+        return result
+
+    def get_all_dates_from_cache(self, timezone: pytz.BaseTzInfo) -> dict:
         result = {}
 
-        with db_session:
-            all_dates = select((m.chat.id, m.utctime) for m in Message)
+        self.update_cache_if_needed()
 
-            for chat_id, date in all_dates:
+        for key in cache.scan_keys("chat_dates:*"):
+            chat_id = int(key.split(":")[-1])
+            chat_dates = map(datetime.fromtimestamp, cache.get(key))
+
+            for date in chat_dates:
                 dt_utc = pytz.utc.normalize(pytz.utc.localize(date))
-                dt_loc = dt_utc.astimezone(tz)
+                dt_loc = dt_utc.astimezone(timezone)
 
                 year, month, day = dt_loc.strftime("%Y,%b,%d").split(",")
-
-                days = result.setdefault(int(chat_id), {}).setdefault(year, {}).setdefault(month, [])
+                days = result.setdefault(chat_id, {}).setdefault(year, {}).setdefault(month, [])
 
                 if day not in days:
                     days.append(day)
 
         return result
+
+    @db_session
+    def update_cache_if_needed(self) -> None:
+        dates_db = select((c.id, max(m.utctime)) for c in Chat for m in Message if m.chat.id == c.id)
+
+        for chat_id, db_last_date in dates_db:
+            cache_last_date = cache.get(f"chat_dates:{chat_id}_latest")
+
+            if not cache_last_date:
+                self.update_dates_cache_for_chat(chat_id)
+            elif cache_last_date != db_last_date:
+                self.update_dates_cache_for_chat(chat_id, since=cache_last_date)
+
+    @db_session
+    def update_dates_cache_for_chat(self, chat_id: int, since: t.Optional[datetime] = None) -> None:
+        logger.info(f"Update dates cache for chat #{chat_id}")
+
+        dates_in_cache: list = cache.get(f"chat_dates:{chat_id}") or []
+
+        if since:
+            db_chat_dates = select(m.utctime for m in Chat[chat_id].messages if m.utctime > since)
+        else:
+            db_chat_dates = select(m.utctime for m in Chat[chat_id].messages)
+
+        for date in db_chat_dates:
+            dates_in_cache.append(int(date.timestamp()))
+
+        cache.set(f"chat_dates:{chat_id}", dates_in_cache)
+        cache.set(f"chat_dates:{chat_id}_latest", date)
 
 
 class GetNickColorsHandler(WebSocketCommandHandler):

@@ -155,8 +155,6 @@ class UsageCommandMiddleware(AIBotMiddleware):
             if first_col == "#":  # Line after header
                 result_hline()
 
-
-
         return "\n".join(result)
 
     def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
