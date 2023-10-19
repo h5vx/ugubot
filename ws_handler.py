@@ -115,6 +115,9 @@ class DatesHandler(WebSocketCommandHandler):
         self.update_cache_if_needed()
 
         for key in cache.scan_keys("chat_dates:*"):
+            if key.endswith("_latest"):
+                continue
+
             chat_id = int(key.split(":")[-1])
             chat_dates = map(datetime.fromtimestamp, cache.get(key))
 
