@@ -11,6 +11,16 @@ name = "mcabber"
 version = "1.1.2"
 # os = "TempleOS"
 
+# ROOMS TO JOIN
+# You can specify one or more rooms to join
+# Create configuration section [xmpp.rooms.my-room-name] for each room
+# Example:
+
+# [xmpp.rooms.test]
+# join = true
+# jid = "test@conference.example.com"
+# nick = "bot"
+
 [openai]
 enabled = false
 api_key = "your-api-key"
@@ -72,11 +82,6 @@ websocket_endpoint = "ws://localhost:8000/ws"
 # Format: <number>s/m/h/d/w (seconds, minutes, hours, days, weeks)
 # Set to empty string to disable expiration
 auth_expiration = "1w"
-
-[xmpp.rooms.test]
-join = true
-jid = "test@conference.example.com"
-nick = "bot"
 
 [database]
 path = "./history.db"
