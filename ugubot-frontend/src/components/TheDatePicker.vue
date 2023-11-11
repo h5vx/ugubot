@@ -134,7 +134,7 @@ export default {
             if (!this.dates) return
             if ("..." in this.dates) return
 
-            let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Dec"]
+            let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
             if (reverse) {
                 months = months.reverse()
