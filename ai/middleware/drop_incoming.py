@@ -16,7 +16,7 @@ class DropIncomingIfAIDisabledMiddleware(AIBotMiddleware):
     Drop incoming message if AI is disabled
     """
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if not settings.openai.enabled:
             logger.info(f"{self.__class__.__name__}: Message dropped")
             return None
@@ -31,7 +31,7 @@ class DropIncomingIfNotAddressedMiddleware(AIBotMiddleware):
 
     bot_nick = settings.openai.user_nick
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if not message.is_muc:
             return message
 
@@ -59,7 +59,7 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
         if "admin_jids" not in settings:
             logger.warning(f"{self.__class__.__name__}: admin_jids is not configured")
 
-    def incoming(self, message: IncomingMessage) -> IncomingMessage | OutgoingMessage | None:
+    def incoming(self, message: IncomingMessage) -> t.Optional[t.Union[IncomingMessage, OutgoingMessage]]:
         if message.is_muc and is_user_blocked(message.sender_nick):
             logger.info(f"{self.__class__.__name__}: Message dropped (blocked nickname)")
             return None
@@ -79,7 +79,7 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
 
         return message
 
-    def _check_privileges(self, message: IncomingMessage) -> t.Tuple[bool, OutgoingMessage / None]:
+    def _check_privileges(self, message: IncomingMessage) -> t.Tuple[bool, t.Optional[OutgoingMessage]]:
         if message.is_muc:
             return False, OutgoingMessage("This command works only in private conversation")
 
