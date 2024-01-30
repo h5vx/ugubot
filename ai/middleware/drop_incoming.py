@@ -81,10 +81,18 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
 
     def _check_privileges(self, message: IncomingMessage) -> t.Tuple[bool, t.Optional[OutgoingMessage]]:
         if message.is_muc:
-            return False, OutgoingMessage("This command works only in private conversation")
+            return False, OutgoingMessage(
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text="This command works only in private conversation",
+            )
 
         if "admin_jids" not in settings or message.chat_jid not in settings.admin_jids:
-            return False, OutgoingMessage("You don't have access to use this command")
+            return False, OutgoingMessage(
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text="You don't have access to use this command",
+            )
 
         return True, None
 
@@ -97,7 +105,11 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
         jid_or_nick = message.text
         add_user_in_blocklist(jid_or_nick)
 
-        return OutgoingMessage(f"{jid_or_nick} is added to blocklist")
+        return OutgoingMessage(
+            chat_id=message.chat_id,
+            reply_for=message.database_id,
+            text=f"{jid_or_nick} is added to blocklist",
+        )
 
     def _handle_command_unblock(self, message: IncomingMessage) -> OutgoingMessage:
         can_execute, error_message = self._check_privileges(message)
@@ -108,7 +120,11 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
         jid_or_nick = message.text
         remove_user_from_blocklist(jid_or_nick)
 
-        return OutgoingMessage(f"{jid_or_nick} is removed from blocklist")
+        return OutgoingMessage(
+            chat_id=message.chat_id,
+            reply_for=message.database_id,
+            text=f"{jid_or_nick} is removed from blocklist",
+        )
 
     def _handle_command_blocklist(self, message: IncomingMessage) -> OutgoingMessage:
         can_execute, error_message = self._check_privileges(message)
@@ -119,7 +135,11 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
         blocked_users = get_blocked_users()
 
         if len(blocked_users) == 0:
-            return OutgoingMessage("Happy news: no one blocked. There is 0 blocked users")
+            return OutgoingMessage(
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text="Happy news: no one blocked. There is 0 blocked users",
+            )
 
         report_text = (
             f"There is {len(blocked_users)} blocked " f"{pluralize(len(blocked_users), 'user', 'users', 'users')}:"
@@ -128,4 +148,4 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
         for i, jid_or_nick in enumerate(blocked_users):
             report_text += f"\n{i}. {jid_or_nick}"
 
-        return OutgoingMessage(report_text)
+        return OutgoingMessage(chat_id=message.chat_id, reply_for=message.database_id, text=report_text)
