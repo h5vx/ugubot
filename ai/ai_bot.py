@@ -20,6 +20,7 @@ class AIBot(object):
         middleware.StripMessageTextMiddleware,
         middleware.DropIncomingIfNotAddressedMiddleware,
         middleware.CommandParserMiddleware,
+        middleware.DropIncomingIfUserIsBlockedMiddleware,
         middleware.AlternateModelSwitcherMiddleware,
         middleware.UsageCommandMiddleware,
         middleware.UsageInlineCommandMiddleware,
