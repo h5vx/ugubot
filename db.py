@@ -343,9 +343,16 @@ def add_user_in_blocklist(jid_or_nick: str) -> None:
 
 
 @db_session
-def remove_user_from_blocklist(jid_or_nick: str) -> None:
-    BlockedUsers.select(jid_or_nick=jid_or_nick).delete()
+def remove_user_from_blocklist(jid_or_nick: str) -> bool:
+    u = BlockedUsers.select(jid_or_nick=jid_or_nick).first()
+
+    if not u:
+        return False
+
+    u.delete()
     commit()
+
+    return True
 
 
 @db_session

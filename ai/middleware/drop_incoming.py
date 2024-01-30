@@ -75,7 +75,7 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
             return self._handle_command_unblock(message)
 
         if self.command_list_blocked_users in message.commands:
-            return self._handle_command_unblock(message)
+            return self._handle_command_blocklist(message)
 
         return message
 
@@ -118,7 +118,14 @@ class DropIncomingIfUserIsBlockedMiddleware(AIBotMiddleware):
             return error_message
 
         jid_or_nick = message.text
-        remove_user_from_blocklist(jid_or_nick)
+        is_unblocked = remove_user_from_blocklist(jid_or_nick)
+
+        if not is_unblocked:
+            return OutgoingMessage(
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text=f"{jid_or_nick} is not found in blocklist",
+            )
 
         return OutgoingMessage(
             chat_id=message.chat_id,
