@@ -52,6 +52,10 @@ class NickColor(db.Entity):
     color = Required(str)
 
 
+class BlockedUsers(db.Entity):
+    jid_or_nick = Required(str, index=True, unique=True)
+
+
 class AIModel(db.Entity):
     name = Required(str, unique=True)
     usages = Set("AIUsage")
@@ -325,3 +329,25 @@ def get_usage_for_last_n_days(days: int, chat_id: int = None):
         for usage in AIUsage
         if usage.prompt == msg
     ).fetch()
+
+
+@db_session
+def is_user_blocked(jid_or_nick: str) -> bool:
+    return BlockedUsers.select(jid_or_nick=jid_or_nick).exists()
+
+
+@db_session
+def add_user_in_blocklist(jid_or_nick: str) -> None:
+    BlockedUsers(jid_or_nick=jid_or_nick)
+    commit()
+
+
+@db_session
+def remove_user_from_blocklist(jid_or_nick: str) -> None:
+    BlockedUsers.select(jid_or_nick=jid_or_nick).delete()
+    commit()
+
+
+@db_session
+def get_blocked_users() -> t.List[str]:
+    return list(select(u.jid_or_nick for u in BlockedUsers))

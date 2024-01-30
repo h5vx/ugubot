@@ -59,6 +59,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
                 database_id=message_in_db.id,
                 is_muc=False,
                 chat_id=message_in_db.chat.id,
+                chat_jid=message_in_db.chat.jid,
                 text=message_in_db.text,
                 sender_nick=message_in_db.nick,
             )
@@ -73,6 +74,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
                 database_id=message.id,
                 is_muc=True,
                 chat_id=message.chat.id,
+                chat_jid=message.chat.jid,
                 text=message.text,
                 sender_nick=message.nick,
             )
@@ -111,6 +113,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
                         database_id=message_in_db.id,
                         is_muc=message_in_db.chat.is_muc,
                         chat_id=message_in_db.chat.id,
+                        chat_jid=message_in_db.chat.jid,
                         text=message_in_db.text,
                         sender_nick=message_in_db.nick,
                     )

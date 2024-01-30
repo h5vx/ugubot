@@ -1,3 +1,5 @@
+admin_jids = ["example@example.com"]
+
 [xmpp]
 jid = "example@example.com"
 password = "your-password"
