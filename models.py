@@ -20,7 +20,11 @@ class MessageModel(BaseModel):
 
     @validator("utctime", pre=True)
     def get_timestamp(cls, v: datetime):
-        dt_utc = pytz.utc.normalize(pytz.utc.localize(v))
+        if v.tzinfo:
+            dt_utc = pytz.utc.normalize(v.astimezone(pytz.utc))
+        else:
+            dt_utc = pytz.utc.normalize(pytz.utc.localize(v))
+
         return int(dt_utc.timestamp() * 1000)
 
     @validator("chat", pre=True)

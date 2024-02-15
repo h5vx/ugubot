@@ -125,7 +125,7 @@ def get_or_create_ai_model(name: str):
 def store_message(message: aioxmpp.Message, outgoing=False):
     logger.debug(f"Storing message {message}")
 
-    now = datetime.utcnow()
+    now = datetime.now().astimezone(pytz.utc)
 
     contact = message.to if outgoing else message.from_
     contact_jid = str(contact.bare())
@@ -149,7 +149,7 @@ def store_message(message: aioxmpp.Message, outgoing=False):
 def store_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, outgoing=False):
     logger.debug("Storing MUC message", message)
 
-    now = datetime.utcnow()
+    now = datetime.now().astimezone(pytz.utc)
     mucjid = str(member.conversation_jid.bare())
 
     message = Message(
@@ -168,7 +168,7 @@ def store_muc_message(message: aioxmpp.Message, member: aioxmpp.muc.Occupant, ou
 
 @db_session
 def store_message_for_ai(message: aioxmpp.Message, is_muc: bool):
-    now = datetime.utcnow()
+    now = datetime.now().astimezone(pytz.utc)
 
     contact_jid = str(message.to.bare())
 
@@ -193,7 +193,7 @@ def store_message_for_ai(message: aioxmpp.Message, is_muc: bool):
 
 @db_session
 def store_muc_user_join(occupant: aioxmpp.muc.Occupant):
-    now = datetime.utcnow()
+    now = datetime.now().astimezone(pytz.utc)
     mucjid = str(occupant.conversation_jid.bare())
 
     message = Message(
@@ -211,7 +211,7 @@ def store_muc_user_join(occupant: aioxmpp.muc.Occupant):
 
 @db_session
 def store_muc_user_leave(occupant: aioxmpp.muc.Occupant, muc_leave_mode: t.Optional[aioxmpp.muc.LeaveMode]):
-    now = datetime.utcnow()
+    now = datetime.now().astimezone(pytz.utc)
     mucjid = str(occupant.conversation_jid.bare())
     text = None
 
@@ -234,7 +234,7 @@ def store_muc_user_leave(occupant: aioxmpp.muc.Occupant, muc_leave_mode: t.Optio
 
 @db_session
 def store_muc_topic(member: aioxmpp.muc.ServiceMember, new_topic: str):
-    now = datetime.utcnow()
+    now = datetime.now().astimezone(pytz.utc)
     mucjid = str(member.conversation_jid.bare())
     new_topic = new_topic.any()
 
@@ -254,7 +254,7 @@ def store_muc_topic(member: aioxmpp.muc.ServiceMember, new_topic: str):
 
 @db_session
 def store_muc_privmsg(message: aioxmpp.Message, outgoing=False):
-    now = datetime.utcnow()
+    now = datetime.now().astimezone(pytz.utc)
     mucjid = str(message.from_.bare())
     contact_nick = message.from_.resource
 
