@@ -88,7 +88,7 @@ auth_expiration = "1w"
 [database]
 provider = "sqlite"
 filename = "./history.db"
-create_db = True
+create_db = true
 
 # [database]
 # provider = "postgres"
