@@ -85,9 +85,8 @@ class AIUsageInfo:
 
 
 def db_init():
-    db_path = os.path.abspath(settings.database.path)
-    logger.info(f"Opening database {db_path}")
-    db.bind("sqlite", db_path, create_db=True)
+    logger.info(f"Creating connection to database")
+    db.bind(**settings.database)
 
     logger.info(f"Start database migration")
     db.generate_mapping(create_tables=True)

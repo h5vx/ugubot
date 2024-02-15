@@ -86,7 +86,17 @@ websocket_endpoint = "ws://localhost:8000/ws"
 auth_expiration = "1w"
 
 [database]
-path = "./history.db"
+provider = "sqlite"
+filename = "./history.db"
+create_db = True
+
+# [database]
+# provider = "postgres"
+# user = ""
+# password = ""
+# host = "localhost"
+# port = 5432
+# database = "ugubot"
 
 [redis]
 # Redis is optional. It is used for caching to improve performance

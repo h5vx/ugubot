@@ -37,6 +37,7 @@ pydantic = "^1.10.6"
 tiktoken = "^0.3.2"
 redis = "^5.0.1"
 hyperdx-opentelemetry = "^0.0.5"
+psycopg2 = "^2.9.9"
 
 
 [build-system]
