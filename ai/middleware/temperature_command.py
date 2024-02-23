@@ -46,11 +46,11 @@ class TemperatureCommandMiddleware(AIBotMiddleware):
                 text=f"Error: '{temp_str}' is not a valid number. Specify temperature as number, like this: ~t 0.5",
             )
 
-        if temp < 0.0 or temp > 1.0:
+        if temp < 0.0 or temp > 2.0:
             return OutgoingMessage(
                 chat_id=message.chat_id,
                 reply_for=message.database_id,
-                text=f"Error: Temperature must be in range 0 - 1",
+                text=f"Error: Temperature must be in range 0 - 2",
             )
 
         message.openai_api_params["temperature"] = temp
