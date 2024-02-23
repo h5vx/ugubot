@@ -22,6 +22,7 @@ class AIBot(object):
         middleware.CommandParserMiddleware,
         middleware.DropIncomingIfUserIsBlockedMiddleware,
         middleware.AlternateModelSwitcherMiddleware,
+        middleware.TemperatureCommandMiddleware,
         middleware.UsageCommandMiddleware,
         middleware.UsageInlineCommandMiddleware,
         middleware.HelpCommandHandlerMiddleware,
@@ -40,11 +41,12 @@ class AIBot(object):
                 self._clear_context = mw.clear_context
                 break
 
-    async def get_completion(self, messages, model):
+    async def get_completion(self, messages, model, **kwargs):
+        if kwargs:
+            logger.info(f"This completion have extra options: {kwargs}")
+
         result = await openai.ChatCompletion.acreate(
-            model=model,
-            max_tokens=settings.openai.tokens_reserved_for_response,
-            messages=messages,
+            model=model, max_tokens=settings.openai.tokens_reserved_for_response, messages=messages, **kwargs
         )
 
         return result
@@ -74,7 +76,9 @@ class AIBot(object):
 
             while attempts > 0:
                 try:
-                    completion = await self.get_completion(message.full_with_context, message.model)
+                    completion = await self.get_completion(
+                        message.full_with_context, message.model, **message.openai_api_params
+                    )
                     failed = False
                     break
                 except Exception as e:

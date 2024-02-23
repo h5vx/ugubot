@@ -10,6 +10,7 @@ from .help_command import HelpCommandHandlerMiddleware
 from .strip_message import StripMessageTextMiddleware
 from .usage_command import UsageCommandMiddleware, UsageInlineCommandMiddleware
 from .user_defined_prompt import UserDefinedPromptMiddleware
+from .temperature_command import TemperatureCommandMiddleware
 
 __all__ = (
     AlternateModelSwitcherMiddleware,
@@ -19,6 +20,7 @@ __all__ = (
     DropIncomingIfNotAddressedMiddleware,
     DropIncomingIfUserIsBlockedMiddleware,
     StripMessageTextMiddleware,
+    TemperatureCommandMiddleware,
     UserDefinedPromptMiddleware,
     HelpCommandHandlerMiddleware,
     UsageCommandMiddleware,

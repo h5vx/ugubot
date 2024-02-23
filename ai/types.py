@@ -20,6 +20,7 @@ class IncomingMessage:
     text: str
     sender_nick: str
     commands: t.List[str] = field(default_factory=list)
+    openai_api_params: t.Dict[str, t.Any]
 
     full_with_context: t.List[t.Dict[str, str]] = field(default_factory=list)
     model: str = settings.openai.model
