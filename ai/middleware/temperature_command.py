@@ -22,22 +22,36 @@ class TemperatureCommandMiddleware(AIBotMiddleware):
 
         if not temp_str.replace(".", "").isnumeric():
             return OutgoingMessage(
-                f"Error: ~t command expects numeric argument; you pass '{temp_str}', which"
-                " is not a valid number. Specify temperature as number, like this: ~t 0.5"
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text=(
+                    f"Error: ~t command expects numeric argument; you pass '{temp_str}', which"
+                    " is not a valid number. Specify temperature as number, like this: ~t 0.5"
+                ),
             )
 
         if len(temp_str) > 5:
-            return OutgoingMessage(f"Error: your temperature is too precise")
+            return OutgoingMessage(
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text=f"Error: your temperature is too precise",
+            )
 
         try:
             temp = float(temp_str)
         except ValueError as e:
             return OutgoingMessage(
-                f"Error: '{temp_str}' is not a valid number. Specify temperature as number, like this: ~t 0.5"
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text=f"Error: '{temp_str}' is not a valid number. Specify temperature as number, like this: ~t 0.5",
             )
 
         if temp < 0.0 or temp > 1.0:
-            return OutgoingMessage(f"Error: Temperature must be in range 0 - 1")
+            return OutgoingMessage(
+                chat_id=message.chat_id,
+                reply_for=message.database_id,
+                text=f"Error: Temperature must be in range 0 - 1",
+            )
 
         message.openai_api_params["temperature"] = temp
         return message
