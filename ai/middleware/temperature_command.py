@@ -17,7 +17,7 @@ class TemperatureCommandMiddleware(AIBotMiddleware):
         return message
 
     def _handle_command_t(self, message: IncomingMessage) -> t.Union[IncomingMessage, OutgoingMessage]:
-        temp_str, message.text = message.text.split(" ", maxsplit=2)
+        temp_str, message.text = message.text.split(" ", maxsplit=1)
         temp = 0.5
 
         if not temp_str.replace(".", "").isnumeric():
