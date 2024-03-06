@@ -147,7 +147,7 @@ class DatesHandler(WebSocketCommandHandler):
 
     @db_session
     def update_dates_cache_for_chat(self, chat_id: int, since: t.Optional[datetime] = None) -> None:
-        logger.info(f"Update dates cache for chat #{chat_id}")
+        logger.info(f"Update dates cache for chat #{chat_id} since <{since}>")
 
         dates_in_cache: list = cache.get(f"chat_dates:{chat_id}") or []
 
@@ -159,11 +159,12 @@ class DatesHandler(WebSocketCommandHandler):
         for date in db_chat_dates:
             dates_in_cache.append(int(date.timestamp()))
         else:
-            cache.set(f"chat_dates:{chat_id}", dates_in_cache)
+            logger.info(f"  -> done without updates")
             return
 
         cache.set(f"chat_dates:{chat_id}", dates_in_cache)
         cache.set(f"chat_dates:{chat_id}_latest", date)
+        logger.info(f"  -> done")
 
 
 class GetNickColorsHandler(WebSocketCommandHandler):
