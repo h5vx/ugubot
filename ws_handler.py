@@ -159,6 +159,7 @@ class DatesHandler(WebSocketCommandHandler):
         for date in db_chat_dates:
             dates_in_cache.append(int(date.timestamp()))
         else:
+            cache.set(f"chat_dates:{chat_id}", dates_in_cache)
             logger.info(f"  -> done without updates")
             return
 
