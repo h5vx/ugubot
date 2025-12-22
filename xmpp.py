@@ -187,9 +187,14 @@ class XMPPClient:
         for handler in self.handlers[Handler.MUC_TOPIC_CHANGED.value]:
             handler(member, new_topic, *args, **kwargs)
 
-    def join_room(self, jid: str, nick: str):
+    def join_room(self, jid: str, nick: str, room_password: str = None):
         jid = aioxmpp.JID.fromstr(jid)
-        room, future = self.muc.join(jid, nick)
+
+        join_extra_args = {}
+        if room_password is not None:
+            join_extra_args["password"] = room_password
+
+        room, future = self.muc.join(jid, nick, **join_extra_args)
 
         room.on_message.connect(self.on_muc_message)
         room.on_muc_enter.connect(self.on_muc_enter)

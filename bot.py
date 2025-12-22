@@ -99,7 +99,7 @@ async def bot_task(ws_clients: t.Mapping[UUID, asyncio.Queue]):
         if not room.join:
             continue
 
-        bot.join_room(room.jid, room.nick)
+        bot.join_room(room.jid, room.nick, room_password=room.get("password"))
 
     async def webui_outgoing_messages_handler():
         while True:
