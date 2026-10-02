@@ -1,7 +1,11 @@
-# Every service in its own container. Put settings.toml (and optionally
-# .secrets.toml) next to this file; database.url and nats.url are set here.
+# Every service in its own container. Put settings.toml and .secrets.toml
+# (may be empty: `touch .secrets.toml`) next to this file; database.url and
+# nats.url are set here.
 #
 #   docker compose up -d --build
+#
+# Services run as the owner of the settings files (1000:1000 by default) so
+# they can stay private (chmod 600). Override with UGUBOT_UID / UGUBOT_GID.
 #
 # For a single process instead, run `ugubot all` with nats.url = "embedded".
 
@@ -10,8 +14,18 @@ x-ugubot: &ugubot
   image: ugubot
   restart: unless-stopped
   depends_on: [postgres, nats]
+  user: "${UGUBOT_UID:-1000}:${UGUBOT_GID:-1000}"
   volumes:
-    - ./settings.toml:/app/settings.toml:ro
+    - type: bind
+      source: ./settings.toml
+      target: /app/settings.toml
+      read_only: true
+      bind: { create_host_path: false }
+    - type: bind
+      source: ./.secrets.toml
+      target: /app/.secrets.toml
+      read_only: true
+      bind: { create_host_path: false }
   environment:
     UGUBOT_DATABASE__URL: postgres://ugubot:ugubot@postgres:5432/ugubot
     UGUBOT_NATS__URL: nats://nats:4222

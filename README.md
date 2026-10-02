@@ -52,8 +52,11 @@ go run ./cmd/ugubot all
 **Сервисами в Docker**: postgres, nats и четыре контейнера из одного образа:
 
 ```sh
+touch .secrets.toml   # если секретов отдельно нет
 docker compose up -d --build
 ```
+
+Контейнеры работают от uid:gid 1000:1000, чтобы читать `settings.toml` и `.secrets.toml` с правами `600`. Если файлы принадлежат другому пользователю, задайте `UGUBOT_UID` и `UGUBOT_GID`.
 
 Отдельный сервис запускается так: `ugubot [-config settings.toml] history|xmpp-gateway|ai-worker|web-gateway`.
 
