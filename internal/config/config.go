@@ -5,6 +5,7 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -171,7 +172,15 @@ func Load(files ...string) (*Config, error) {
 		Prefix: "UGUBOT_",
 		TransformFunc: func(k, v string) (string, any) {
 			k = strings.ToLower(strings.TrimPrefix(k, "UGUBOT_"))
-			return strings.ReplaceAll(k, "__", keyDelim), v
+			k = strings.ReplaceAll(k, "__", keyDelim)
+			// Lists are given as JSON: UGUBOT_WEBUI__PASSWORDS_SHA512='["..."]'
+			if strings.HasPrefix(strings.TrimSpace(v), "[") {
+				var list []any
+				if err := json.Unmarshal([]byte(v), &list); err == nil {
+					return k, list
+				}
+			}
+			return k, v
 		},
 	})
 	if err := k.Load(envProvider, nil); err != nil {

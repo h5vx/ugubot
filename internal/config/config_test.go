@@ -41,6 +41,7 @@ format = "ignored, left from the Python version"
 	}
 	t.Setenv("UGUBOT_XMPP__PASSWORD", "from-env")
 	t.Setenv("UGUBOT_WEBUI__PORT", "9000")
+	t.Setenv("UGUBOT_WEBUI__PASSWORDS_SHA512", `["aa", "bb"]`)
 
 	cfg, err := Load(file)
 	if err != nil {
@@ -49,6 +50,9 @@ format = "ignored, left from the Python version"
 
 	if cfg.XMPP.Password != "from-env" || cfg.WebUI.Port != 9000 {
 		t.Errorf("env overrides: password %q, port %d", cfg.XMPP.Password, cfg.WebUI.Port)
+	}
+	if p := cfg.WebUI.PasswordsSHA512; len(p) != 2 || p[1] != "bb" {
+		t.Errorf("list from env: %q", p)
 	}
 	if r := cfg.XMPP.Rooms["test"]; !r.Join || r.JID != "test@conference.example.com" {
 		t.Errorf("room: %+v", r)

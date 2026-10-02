@@ -1,5 +1,6 @@
 # Copy to settings.toml. Secrets can go to .secrets.toml (same format) or to
 # environment variables: UGUBOT_<SECTION>__<KEY>, e.g. UGUBOT_XMPP__PASSWORD.
+# Lists are given as JSON: UGUBOT_WEBUI__PASSWORDS_SHA512='["<sha512>"]'.
 
 # JIDs allowed to use ~block / ~unblock / ~blocklist in private chat with the bot
 admin_jids = ["example@example.com"]
