@@ -1,6 +1,8 @@
-.secrets.toml
 .git
-ugubot-frontend/
+.secrets.toml
+settings.toml
+web/node_modules
+internal/web/dist
+test/
+nats-data/
 *.db
-__pycache__
-*.pyc

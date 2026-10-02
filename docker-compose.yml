@@ -1,0 +1,60 @@
+# Every service in its own container. Put settings.toml (and optionally
+# .secrets.toml) next to this file; database.url and nats.url are set here.
+#
+#   docker compose up -d --build
+#
+# For a single process instead, run `ugubot all` with nats.url = "embedded".
+
+x-ugubot: &ugubot
+  build: .
+  image: ugubot
+  restart: unless-stopped
+  depends_on: [postgres, nats]
+  volumes:
+    - ./settings.toml:/app/settings.toml:ro
+  environment:
+    UGUBOT_DATABASE__URL: postgres://ugubot:ugubot@postgres:5432/ugubot
+    UGUBOT_NATS__URL: nats://nats:4222
+
+services:
+  history:
+    <<: *ugubot
+    command: ["history"]
+
+  xmpp-gateway:
+    <<: *ugubot
+    command: ["xmpp-gateway"]
+
+  ai-worker:
+    <<: *ugubot
+    command: ["ai-worker"]
+
+  web-gateway:
+    <<: *ugubot
+    command: ["web-gateway"]
+    environment:
+      UGUBOT_NATS__URL: nats://nats:4222
+      UGUBOT_WEBUI__LISTEN: 0.0.0.0
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  nats:
+    image: nats:2.11-alpine
+    restart: unless-stopped
+    command: ["--jetstream", "--store_dir", "/data"]
+    volumes:
+      - nats:/data
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ugubot
+      POSTGRES_PASSWORD: ugubot
+      POSTGRES_DB: ugubot
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+volumes:
+  nats:
+  postgres:

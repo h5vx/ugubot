@@ -1,0 +1,39 @@
+# Settings for the e2e run (see run.sh). Not for production.
+admin_jids = ["alice@localhost"]
+
+[xmpp]
+jid = "bot@localhost"
+password = "botpass"
+host = "ugu-prosody:5222"
+ssl_verify = false
+
+[xmpp.subscribes]
+auto_approve = true
+
+[xmpp.rooms.test]
+join = true
+jid = "test@conference.localhost"
+nick = "ugubot"
+
+[openai]
+enabled = true
+api_key = "test"
+base_url = "http://ugu-e2e:9999/v1/"
+model = "gpt-4o-mini"
+user_nick = "ugubot"
+
+[webui]
+listen = "0.0.0.0"
+port = 8000
+passwords_sha512 = ["a41159e3326bbf0ff769374ec78cfde59ed7cd774ff9ce725fee1d25aa06706a5ba45eb3dce385b067a5b4e4bc298370107bee1e28cb85dafd3b89026b822fef"]  # "webpass"
+signing_key = "e2e-signing-key"
+
+[database]
+url = "postgres://postgres:x@ugu-pg:5432/ugubot"
+
+[nats]
+url = "embedded"
+store_dir = "/tmp/nats"
+
+[log]
+level = "debug"
