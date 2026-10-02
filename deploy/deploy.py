@@ -85,7 +85,10 @@ existing = dict(
     if "=" in line and not line.startswith("#")
 )
 env = {
-    "UGUBOT_IMAGE": image.tag,
+    # The per-build tag changes with every new image, unlike git describe
+    # (a rebuild of a dirty tree keeps the same describe), so .env changes
+    # and `docker compose up -d` recreates the containers.
+    "UGUBOT_IMAGE": image.build_tag,
     "UGUBOT_UID": uid,
     "UGUBOT_GID": gid,
     "UGUBOT_WEB_BIND": web_bind,
