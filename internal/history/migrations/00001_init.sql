@@ -31,15 +31,28 @@ CREATE TABLE chat.nick_colors (
 -- Import data from the Python (Pony ORM) version when its tables exist.
 -- Old tables are left untouched.
 -- +goose StatementBegin
+-- message.utctime is "timestamp" (naive UTC) in databases created by Pony
+-- and "timestamptz" in some migrated ones; both are handled.
 DO $$
+DECLARE
+    ts_expr text;
 BEGIN
     IF to_regclass('public.message') IS NOT NULL AND to_regclass('public.chat') IS NOT NULL THEN
         INSERT INTO chat.chats (id, jid, name, is_muc)
         SELECT id, jid, name, is_muc FROM public.chat;
 
-        INSERT INTO chat.messages (id, chat_id, ts, kind, nick, text, outgoing)
-        SELECT id, chat, utctime AT TIME ZONE 'UTC', msg_type, nick, coalesce(text, ''), outgoing
-        FROM public.message;
+        ts_expr := CASE
+            WHEN (SELECT data_type FROM information_schema.columns
+                  WHERE table_schema = 'public' AND table_name = 'message' AND column_name = 'utctime')
+                 = 'timestamp with time zone'
+            THEN 'utctime'
+            ELSE $q$utctime AT TIME ZONE 'UTC'$q$
+        END;
+
+        EXECUTE format($q$
+            INSERT INTO chat.messages (id, chat_id, ts, kind, nick, text, outgoing)
+            SELECT id, chat, %s, msg_type, nick, coalesce(text, ''), outgoing
+            FROM public.message$q$, ts_expr);
     END IF;
 
     IF to_regclass('public.nickcolor') IS NOT NULL THEN

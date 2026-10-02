@@ -31,17 +31,29 @@ CREATE TABLE ai.preludes (
 
 -- Import data from the Python (Pony ORM) version when its tables exist.
 -- +goose StatementBegin
+-- message.utctime is "timestamp" (naive UTC) or "timestamptz", see chat migration.
 DO $$
+DECLARE
+    ts_expr text;
 BEGIN
     IF to_regclass('public.aiusage') IS NOT NULL THEN
-        INSERT INTO ai.usage (ts, chat_id, chat_name, nick, model, prompt_message_id, completion_message_id,
-                              prompt_tokens, completion_tokens, total_tokens)
-        SELECT m.utctime AT TIME ZONE 'UTC', m.chat, c.name, m.nick, am.name, u.prompt, u.completion,
-               coalesce(u.prompt_tokens, 0), coalesce(u.completion_tokens, 0), coalesce(u.total_tokens, 0)
-        FROM public.aiusage u
-        JOIN public.message m ON m.id = u.prompt
-        JOIN public.chat c ON c.id = m.chat
-        JOIN public.aimodel am ON am.id = u.model;
+        ts_expr := CASE
+            WHEN (SELECT data_type FROM information_schema.columns
+                  WHERE table_schema = 'public' AND table_name = 'message' AND column_name = 'utctime')
+                 = 'timestamp with time zone'
+            THEN 'm.utctime'
+            ELSE $q$m.utctime AT TIME ZONE 'UTC'$q$
+        END;
+
+        EXECUTE format($q$
+            INSERT INTO ai.usage (ts, chat_id, chat_name, nick, model, prompt_message_id, completion_message_id,
+                                  prompt_tokens, completion_tokens, total_tokens)
+            SELECT %s, m.chat, c.name, m.nick, am.name, u.prompt, u.completion,
+                   coalesce(u.prompt_tokens, 0), coalesce(u.completion_tokens, 0), coalesce(u.total_tokens, 0)
+            FROM public.aiusage u
+            JOIN public.message m ON m.id = u.prompt
+            JOIN public.chat c ON c.id = m.chat
+            JOIN public.aimodel am ON am.id = u.model$q$, ts_expr);
     END IF;
 
     IF to_regclass('public.blockedusers') IS NOT NULL THEN

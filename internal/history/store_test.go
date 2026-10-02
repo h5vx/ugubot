@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -66,10 +67,26 @@ INSERT INTO nickcolor (nick, color) VALUES ('alice', '#ff0000');
 `
 
 func TestLegacyImportAndQueries(t *testing.T) {
+	t.Run("timestamp", func(t *testing.T) { testLegacyImport(t, legacySchema) })
+	// Some production databases have timestamptz; the session timezone
+	// must not shift the imported times.
+	t.Run("timestamptz", func(t *testing.T) {
+		testLegacyImport(t, "SET TIME ZONE 'Europe/Moscow';\n"+
+			strings.Replace(legacySchema, "utctime timestamp NOT NULL", "utctime timestamptz NOT NULL", 1)+
+			"UPDATE message SET utctime = (utctime AT TIME ZONE 'Europe/Moscow') AT TIME ZONE 'UTC';\n")
+	})
+}
+
+func testLegacyImport(t *testing.T, schema string) {
 	pool := newTestDB(t)
 	ctx := context.Background()
 
-	if _, err := pool.Exec(ctx, legacySchema); err != nil {
+	// Non-UTC session timezone, as on a server configured for Moscow.
+	if _, err := pool.Exec(ctx, "ALTER DATABASE "+pool.Config().ConnConfig.Database+" SET timezone = 'Europe/Moscow'"); err != nil {
+		t.Fatal(err)
+	}
+	pool.Reset()
+	if _, err := pool.Exec(ctx, schema); err != nil {
 		t.Fatal(err)
 	}
 	if err := pg.Migrate(ctx, pool, pg.MustSub(migrations, "migrations"), "goose_version_chat"); err != nil {
