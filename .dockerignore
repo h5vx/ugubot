@@ -6,3 +6,4 @@ internal/web/dist
 test/
 nats-data/
 *.db
+deploy/.build

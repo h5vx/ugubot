@@ -21,3 +21,8 @@ nats-data/
 # Frontend build output is embedded by the Go web-gateway
 internal/web/dist/*
 !internal/web/dist/.gitkeep
+
+# Deploy
+deploy/inventory.py
+deploy/.build/
+__pycache__/

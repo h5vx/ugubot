@@ -1,0 +1,69 @@
+# Managed by deploy/deploy.py, changes are overwritten on the next deploy.
+# Settings live in settings.toml and .secrets.toml next to this file; the
+# image tag, uid/gid and the database password are in .env.
+#
+#   docker compose up -d
+
+x-ugubot: &ugubot
+  image: ${UGUBOT_IMAGE:?set in .env}
+  restart: unless-stopped
+  depends_on: [postgres, nats]
+  user: "${UGUBOT_UID:?set in .env}:${UGUBOT_GID:?set in .env}"
+  volumes:
+    - type: bind
+      source: ./settings.toml
+      target: /app/settings.toml
+      read_only: true
+      bind: { create_host_path: false }
+    - type: bind
+      source: ./.secrets.toml
+      target: /app/.secrets.toml
+      read_only: true
+      bind: { create_host_path: false }
+  environment:
+    UGUBOT_DATABASE__URL: postgres://ugubot:${POSTGRES_PASSWORD:?set in .env}@postgres:5432/ugubot
+    UGUBOT_NATS__URL: nats://nats:4222
+
+services:
+  history:
+    <<: *ugubot
+    command: ["history"]
+
+  xmpp-gateway:
+    <<: *ugubot
+    command: ["xmpp-gateway"]
+
+  ai-worker:
+    <<: *ugubot
+    command: ["ai-worker"]
+
+  web-gateway:
+    <<: *ugubot
+    command: ["web-gateway"]
+    environment:
+      UGUBOT_NATS__URL: nats://nats:4222
+      UGUBOT_WEBUI__LISTEN: 0.0.0.0
+      UGUBOT_WEBUI__PORT: "8000"
+    ports:
+      - "${UGUBOT_WEB_BIND:-127.0.0.1:8000}:8000"
+
+  nats:
+    image: {{ nats_image }}
+    restart: unless-stopped
+    command: ["--jetstream", "--store_dir", "/data"]
+    volumes:
+      - nats:/data
+
+  postgres:
+    image: {{ postgres_image }}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ugubot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ugubot
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+volumes:
+  nats:
+  postgres:
