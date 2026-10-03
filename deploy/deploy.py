@@ -31,6 +31,8 @@ web_bind = str(host.data.get("ugubot_web_bind", "127.0.0.1:8000"))
 settings_src = host.data.get("ugubot_settings", os.path.join(REPO, "settings.toml.example"))
 secrets_src = host.data.get("ugubot_secrets")
 start = str(host.data.get("ugubot_up", False)).lower() in ("1", "true", "yes")  # --data gives strings
+# server_name for contrib/nginx/ugubot.conf; the placeholder is kept if unset.
+domain = host.data.get("ugubot_domain")
 postgres_image = host.data.get("ugubot_postgres_image", "postgres:17-alpine")
 nats_image = host.data.get("ugubot_nats_image", "nats:2.11-alpine")
 
@@ -101,6 +103,32 @@ files.put(
     user=owner,
     group=group,
     mode="600",
+)
+
+
+def nginx_upstream(bind: str) -> str:
+    """Address nginx on the same host uses to reach a web_bind like "127.0.0.1:8000"."""
+    addr, _, port = bind.rpartition(":")
+    if addr in ("", "0.0.0.0", "[::]", "*"):
+        addr = "127.0.0.1"
+    return f"{addr}:{port}"
+
+
+nginx_conf = open(os.path.join(REPO, "contrib", "nginx", "ugubot.conf")).read()
+nginx_conf = nginx_conf.replace("server 127.0.0.1:8000;", f"server {nginx_upstream(web_bind)};")
+if domain:
+    nginx_conf = nginx_conf.replace("ugubot.example.com", str(domain))
+
+for path in (f"{app_dir}/contrib", f"{app_dir}/contrib/nginx"):
+    files.directory(name=f"Create {path}", path=path, user=owner, group=group, mode="755")
+
+files.put(
+    name="Write contrib/nginx/ugubot.conf",
+    src=io.StringIO(nginx_conf),
+    dest=f"{app_dir}/contrib/nginx/ugubot.conf",
+    user=owner,
+    group=group,
+    mode="644",
 )
 
 for name, src in (("settings.toml", settings_src), (".secrets.toml", secrets_src)):

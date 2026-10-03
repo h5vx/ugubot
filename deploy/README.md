@@ -7,7 +7,8 @@
 3. Кладёт в `ugubot_dir` (по умолчанию `/opt/ugubot`) два файла, которые перезаписываются при каждом деплое:
    - `docker-compose.yml`;
    - `.env` с тегом образа `ugubot:build-<id>`, uid/gid и паролем PostgreSQL. Тег уникален для каждой сборки, поэтому при новом образе `.env` всегда меняется. Пароль генерируется один раз и дальше сохраняется.
-4. Создаёт `settings.toml` и `.secrets.toml`, если их ещё нет. Права `600`, существующие файлы не трогаются.
+4. Кладёт `contrib/nginx/ugubot.conf` (перезаписывается при каждом деплое). Upstream в нём берётся из `ugubot_web_bind`, `server_name` — из `ugubot_domain`, если он задан. Подключение: `cp contrib/nginx/ugubot.conf /etc/nginx/conf.d/ && nginx -t && systemctl reload nginx && certbot --nginx -d <домен>`.
+5. Создаёт `settings.toml` и `.secrets.toml`, если их ещё нет. Права `600`, существующие файлы не трогаются.
 
 Что нужно:
 - локально: `docker` и `pyinfra` 3;

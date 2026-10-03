@@ -5,6 +5,7 @@
 #   ugubot_user            owner of the files, containers run with its uid/gid
 #                          (default: the SSH user)
 #   ugubot_web_bind        host address for the web interface (127.0.0.1:8000)
+#   ugubot_domain          server_name in contrib/nginx/ugubot.conf on the host
 #   ugubot_settings        local settings.toml uploaded on the first deploy
 #                          (default: settings.toml.example)
 #   ugubot_secrets         local .secrets.toml uploaded on the first deploy
@@ -22,6 +23,7 @@ hosts = [
         {
             "ssh_user": "ugubok",
             "ugubot_web_bind": "127.0.0.1:8000",
+            # "ugubot_domain": "ugubot.example.com",
             # "ugubot_settings": "settings.toml",
             # "ugubot_secrets": ".secrets.toml",
             # "ugubot_up": True,
